@@ -91,3 +91,6 @@ supposedly at subfamily level but might not be used
 /script/teatime_analyses/phyloPvsAge_subfamily_level.py
 ```
 plotting mean phyloP vs median teatime of te subfamilies
+
+## License
+This repo is licensed under the MIT License. 
