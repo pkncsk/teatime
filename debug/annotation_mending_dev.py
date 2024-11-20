@@ -1,22 +1,21 @@
 #%%
 import pandas as pd
-import sys
-import os
-sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age')
-import config_hg38 as config
+from ma_mapper import utility
+#%% INPUT PARAMETERS
+repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
+internal_id_dir = None
+#%% INITIATION
+repeatmasker_table=utility.repeatmasker_prep(repeatmasker_filepath)
 #%%
-rmsk_table=config.rmskout_table
-filtered_table =config.filtered_table
-# %%
 subfamily = 'THE1C'
 #for subfamily in config.subfamily_list:
-overlap_cov_threshold = 0.25
-output_folder = config.internal_id_folder
 subfamily_filename = subfamily.replace('/', '_')
-output_filepath = f'{output_folder}/{subfamily_filename}.txt'
-
+overlap_cov_threshold = 0.25
+if internal_id_dir is None:
+        internal_id_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+output_filepath = f'{internal_id_dir}/{subfamily_filename}.internal_id.txt'
 # Prepare TE data
-subfam_table = filtered_table[filtered_table['repName'] == subfamily].copy()
+subfam_table = repeatmasker_table[repeatmasker_table['repName'] == subfamily].copy()
 subfam_table['length'] = subfam_table['genoEnd'] - subfam_table['genoStart']
 subfam_table['repLength'] = subfam_table['repEnd'] - subfam_table['repStart'] + 1
 
@@ -61,7 +60,7 @@ finalised_index_list_test = []
 internal_id_list_test = []
 #sometimes the task will be simpler if the code imitates human behavior
 for idx in [1493635]:
-    table_by_id = filtered_table[(filtered_table.id == idx) & (filtered_table.repName == subfamily)].copy()
+    table_by_id = repeatmasker_table[(repeatmasker_table.id == idx) & (repeatmasker_table.repName == subfamily)].copy()
     if table_by_id.strand.unique()[0] =='-':
         table_by_id  = table_by_id.sort_index(ascending=False)
     table_by_id['repLength'] = table_by_id.repEnd - table_by_id.repStart + 1
@@ -142,7 +141,7 @@ internal_id_tbl=pd.DataFrame(dict_prep)
 #2783791
 #for idx in partial_frag_id:
 for idx in [874833]:
-    table_by_id = filtered_table[(filtered_table.id == idx) & (filtered_table.repName == subfamily)].copy()
+    table_by_id = repeatmasker_table[(repeatmasker_table.id == idx) & (repeatmasker_table.repName == subfamily)].copy()
     if table_by_id.strand.unique()[0] =='-':
         table_by_id  = table_by_id.sort_index(ascending=False)
     table_by_id['repLength'] = table_by_id.repEnd - table_by_id.repStart + 1
@@ -151,7 +150,7 @@ for idx in [874833]:
     table_by_id['next_repEnd'] = table_by_id['repEnd'].shift(-1)
     table_by_id['tag'] = None
     table_by_id.loc[(table_by_id['repLength'] > common_length * 0.95) or table_by_id, 'tag'] = 'COMPLETE'
-    for idx, row in table_by_id.iterrows():
+    for _idx, row in table_by_id.iterrows():
         if row.tag is None:
             if ((row.repEnd == row.next_repEnd) or (row.repStart == row.next_repStart)) and (row.next_repLength >1):
                 table_by_id.loc[idx,'tag'] = 'CLOSE'
@@ -166,13 +165,13 @@ table_by_id
 # %%
 for idx in partial_frag_id:
 #for idx in [3889163]:
-    table_by_id = filtered_table[(filtered_table.id == idx) & (filtered_table.repName == subfamily)].copy()
+    table_by_id = repeatmasker_table[(repeatmasker_table.id == idx) & (repeatmasker_table.repName == subfamily)].copy()
     if table_by_id.shape[0]>3:
         print(idx)
 # %%
     for idx in partial_frag_id:
     #for idx in [439967]:
-        table_by_id = filtered_table[filtered_table.id == idx]
+        table_by_id = repeatmasker_table[repeatmasker_table.id == idx]
         if table_by_id.strand.unique()[0] =='-':
             table_by_id  = table_by_id.sort_index(ascending=False)
         table_by_id=table_by_id.reset_index()

@@ -2,19 +2,17 @@
 import numpy as np
 import pandas as pd
 from Bio.AlignIO import MafIO
-from concurrent.futures import ProcessPoolExecutor
-import sys
-sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age')
-import config_early_test as config
-sys.path.append('/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/')
-from ma_mapper import extract_maf
+from ma_mapper import extract_maf, utility
 MafIO.MafIndex.get_spliced = extract_maf.get_spliced_mod
 import math
-#import config_mm39_dfam as config
-#sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/varyzer/stable')
-#import config
-#import config_baseline as config
-#%%
+#%% INPUT PARAMETERS
+repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
+divergence_table_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/zoonomia_divergence_ref_table/species241_info.tsv'
+subfamily = 'THE1C'
+target_species = 'Homo_sapiens'
+output_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/output/list_of_e_value_tables_for_figures'
+maf_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/multi_species_multiple_alignment_maf/zoonomia_241_species'
+maf_file_prefix = '241-mammalian-2020v2b.maf'
 #%% math function for blast score calculation
 def affine_count_simple(str1,str2,
     matchWeight = 1,
@@ -227,10 +225,10 @@ def calculate_metrics(row):
         'E_val_flanks': [E_score_front, E_score_back]
     })
 
-#%%
-subfamily = 'THE1C'
-filtered_table=config.filtered_table
-subfam_table=filtered_table[filtered_table['repName']==subfamily]
+#%% INITIATION
+repeatmasker_table=utility.repeatmasker_prep(repeatmasker_filepath)
+species_table =utility.divergence_table_prep(divergence_table_filepath)
+subfam_table=repeatmasker_table[repeatmasker_table['repName']==subfamily]
 # %%
 e_table_list = []
 splice_maf_age_list = []
@@ -247,10 +245,8 @@ for idx, row in subfam_table.iterrows():
         strand = -1
     else:
         strand = 1
-    target_species = config.target_species
-    species_table = config.species_table
-    if target_species == 'Homo_sapiens':
-        mafpath = f'/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/241genomes/241-mammalian-2020v2b.maf.{chrom}'
+  
+    mafpath = f'{maf_dir}/{maf_file_prefix}.{chrom}'
 
     target_chrom = f'{target_species}.{chrom}'
     index_maf = MafIO.MafIndex(f'{mafpath}.mafindex', mafpath, target_chrom)
@@ -284,23 +280,19 @@ for idx, row in subfam_table.iterrows():
     else:
         e_table = first_pass
     e_table_list.append(e_table)
-#%%
+#%% SAVE FILTERED E-VALUE TABLE LIST 
 import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_v0.2.lzma'
+output_filepath = f'{output_dir}/{subfamily}_0.2.lzma'
 compress_pickle.dump(e_table_list, output_filepath, compression="lzma")
-#%%
+#%% SAVE E-VALUE TABLE LIST
 import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_v0.2.lzma'
-e_table_list=compress_pickle.load(output_filepath, compression="lzma")
-#%%
-import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_raw_v0.2.lzma'
+output_filepath = f'{output_dir}/{subfamily}_raw_0.2.lzma'
 compress_pickle.dump(splice_maf_age_list, output_filepath, compression="lzma")
-#%%
+#%% LOAD E-VALUE TABLE LIST
 import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_raw_v0.2.lzma'
+output_filepath = f'{output_dir}/{subfamily}_raw_0.2.lzma'
 splice_maf_age_list=compress_pickle.load(output_filepath, compression="lzma")
-#%% fix cutoff
+#%% fix cutoff (experimental; skip)
 e_table_fix = []
 e_cutoff = 1e-4
 for spliced_maf_age in splice_maf_age_list:
@@ -310,7 +302,11 @@ for spliced_maf_age in splice_maf_age_list:
     else:
         e_table = first_pass
     e_table_fix.append(e_table)
-# %%
+#%% LOAD FILTERED E-VALUE TABLE LIST
+import compress_pickle
+output_filepath = f'{output_dir}/{subfamily}_0.2.lzma'
+e_table_list=compress_pickle.load(output_filepath, compression="lzma")
+#%% MAKE TEATIME TABLE
 te_name_list = []
 te_age_list = []
 len_list = []
@@ -342,9 +338,9 @@ te_age_df=pd.DataFrame({
     'te_len': len_list
 })
 # %%
-age_ref_table = pd.DataFrame(data=config.age_ref_table_template)
+age_ref_table = pd.DataFrame(data=utility.age_ref_table_template)
 age_set=te_age_df['te_age'].sort_values().unique()
-# %%
+# %% PLOT TEATIME DISTRIBUTION
 import matplotlib.pyplot as plt
 plt.rcParams['savefig.dpi'] = 600
 plt.rcParams['figure.dpi'] = 600
@@ -358,8 +354,11 @@ bar_container = bar_axes.bar(age_ref_table[age_ref_table['age'].isin(age_set)]['
 bar_axes.set_title(f'Distribution of TE age in {subfamily}')
 bar_axes.set_ylabel('counts')
 bar_axes.bar_label(bar_container, fmt='{:,.0f}', fontsize=6)
-#%%
-#%%
+#%% LOAD E-VALUE TABLE LIST
+import compress_pickle
+output_filepath = f'{output_dir}/{subfamily}_raw_0.2.lzma'
+splice_maf_age_list=compress_pickle.load(output_filepath, compression="lzma")
+#%% COUNT GAP
 seqid_list = []
 seq_list = []
 perc_gap_list = []
@@ -383,17 +382,9 @@ for sub_df in e_table_list:
         perc_binned_count=sub_df.groupby(['perc_binned'], observed=False).count()
         perc_gap_count=perc_binned_count['seqid'].values
         perc_gap_count_list.append(perc_gap_count)
-
-#%%
-#test = e_table_list[0]
 #%%
 perc_gap_freq_array = np.array([arr / np.sum(arr) for arr in perc_gap_count_list])
-#%%
-seq_tbl=pd.DataFrame({
-    'species': seqid_list,
-    'alignment': seq_list
-})
-# %%
+#%% PLOT GAP PERCENTAGE
 import matplotlib.pyplot as plt
 plt.rcParams['savefig.dpi'] = 600
 plt.rcParams['figure.dpi'] = 600
@@ -405,23 +396,22 @@ box_axes.boxplot(perc_gap_freq_array, 1,'', labels=labels)
 box_axes.set_ylabel('ratio')
 box_axes.set_xlabel('gap percentage')
 box_axes.set_title(f'THE1C gap percentage of alignment in MSA')# %%
-#%%
-# %% outliers investigation
+#%% DEBUG
+seq_tbl=pd.DataFrame({
+    'species': seqid_list,
+    'alignment': seq_list
+})
+#%% INVESTIGATE OUTLIERS 
 outlier_table=te_age_df[(te_age_df['te_age']>43.2)|(te_age_df['te_age'].isna())].sort_values(['te_age'])
 old_table=te_age_df[(te_age_df['te_age']>43.2)].sort_values(['te_age'])
 na_table=te_age_df[(te_age_df['te_age'].isna())].sort_values(['te_age'])
-
-# %%
+#%%
 old_te_call=old_table.index.to_list()
-#%%
-old_table
-# %%
+#%% INDIVIDUAL CHECK
 e_table_df=e_table_list[5396]
-#%%
-age_ref_table = pd.DataFrame(data=config.age_ref_table_template)
+#%% PLOT OUTLIER ALIGNMENT DISTRIBUTION
+age_ref_table = pd.DataFrame(data=utility.age_ref_table_template)
 age_default_set=age_ref_table['age'].sort_values().unique()
-#%%
-#%%
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 plt.rcParams['savefig.dpi'] = 600
@@ -452,25 +442,22 @@ for idx, e_table_index in enumerate(old_te_call):
     if idx == 0:
         bar_axes[idx].set_title('The distribution of alignment age in TE MSA of\nTHE1C assigned with older than expected age (>43.2 MYA)', fontsize=11)
 fig.text(0.02, 0.70, 'alignment counts', va='center', rotation='vertical', fontsize=10)
-
-
-# %% investigate short fragment
+#%% INVESTIGATE SHORT FRAGMENTS
 test_id = 4323003
-filtered_table[filtered_table.index.isin(np.arange(test_id-5,test_id+5))]
-# %%
+repeatmasker_table[repeatmasker_table.index.isin(np.arange(test_id-5,test_id+5))]
+#%%
 na_table=te_age_df[te_age_df['te_age'].isna()].sort_values(['te_age'])
-# %%
+#%%
 na_table=na_table['te_name'].str.split('_', expand=True)
 #%%
 na_table.columns = ['group','rmsk_id']
 #%%
 block_id=subfam_table[subfam_table.index.isin(na_table['rmsk_id'].astype(int).values)]['id'].values
 subfam_table[subfam_table['id'].isin(block_id)][['genoName','genoStart','genoEnd','strand','repStart','repEnd','repLeft']]
-
-# %%
+#%% EXTRACT E-VALUE 
 test_table=splice_maf_age_list[0][['Estimated Time (MYA)','E_value']]
 test_table['log_E_value'] = np.log10(test_table['E_value'])
-# %%
+#%% PLOT ALIGNMENT E-VALUES FROM 1 TABLE
 import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
 grouped_data = test_table.groupby('Estimated Time (MYA)')['log_E_value'].apply(list)
@@ -483,20 +470,19 @@ flierprops = dict(marker='o', markersize=3, linestyle='none', markeredgecolor='b
 ax.boxplot(grouped_values, positions=range(len(unique_ages)), widths=0.6, flierprops=flierprops)
 ax.set_xticks(range(len(unique_ages)))
 #ax.set_xticklabels(age_ref_table.iloc[:-1,:]['representative_age'], rotation=90,)
-
 ax.set_ylim([-400, 400])
 ax.set_ylabel('E-value (log scale)')
 plt.tight_layout()
 plt.show()
-# %%
+#%%
 filtered_list = []
 for idx, splice_table in enumerate(splice_maf_age_list):
     filtered_list.append(splice_table)
-# %%
+#%%
 eteage_table=pd.concat(filtered_list)
 #%%
 eteage_table['log_E_value'] = np.log10(eteage_table['E_value'])
-# %%
+#%% PLOT ALIGNMENT E-VALUES FROM ALL TABLES
 import matplotlib.ticker as ticker
 import matplotlib.pyplot as plt
 import seaborn as sns

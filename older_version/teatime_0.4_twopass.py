@@ -1,21 +1,22 @@
 #%%
-from itertools import repeat
+import itertools
 import numpy as np
 import pandas as pd
 from Bio.AlignIO import MafIO
 from concurrent.futures import ProcessPoolExecutor
-import sys
-sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age')
-import config_early_test as config
-sys.path.append('/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/')
-from ma_mapper import extract_maf
+from ma_mapper import extract_maf, utility
 MafIO.MafIndex.get_spliced = extract_maf.get_spliced_mod
+from datetime import datetime
 import math
-#import config_mm39_dfam as config
-#sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/varyzer/stable')
-#import config
-#import config_baseline as config
-#%%
+#%% INPUT PARAMETERS
+target_species = 'Homo_sapiens'
+divergence_table_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/zoonomia_divergence_ref_table/species241_info.tsv'
+subfamily = 'MER11A'
+output_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/output/list_of_e_value_tables_for_figures'
+repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
+maf_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/multi_species_multiple_alignment_maf/zoonomia_241_species'
+maf_file_prefix = '241-mammalian-2020v2b.maf'
+internal_id_dir = None
 #%% math function for blast score calculation
 def affine_count_simple(str1,str2,
     matchWeight = 1,
@@ -228,20 +229,23 @@ def calculate_metrics(row):
         'E_val_flanks': [E_score_front, E_score_back]
     })
 
-#%%
-subfamily = 'THE1C'
-filtered_table=config.filtered_table
-subfam_table=filtered_table[filtered_table['repName']==subfamily]
+#%% INITIATION
+
 subfamily_filename = subfamily.replace('/','_') 
-input_folder = config.internal_id_folder
-input_filepath = f'{input_folder}/{subfamily_filename}.txt'
+if internal_id_dir is None:
+        internal_id_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+input_filepath = f'{internal_id_dir}/{subfamily_filename}.internal_id.txt'
 internal_id_tbl = pd.read_csv(input_filepath, sep='\t')
 internal_id_list = internal_id_tbl.internal_id.unique()
-#%%
-def twopass_calc(internal_id,internal_id_tbl,e_cutoff = 1e-3, testing_width = 10000):
+repeatmasker_table = utility.repeatmasker_prep(repeatmasker_filepath)
+subfam_table=repeatmasker_table[repeatmasker_table['repName']==subfamily]
+divergence_table=utility.divergence_table_prep(divergence_table_filepath)
+#%% PARALLELIZE E-VALUE CALCULATION
+def twopass_calc(internal_id,e_cutoff = 1e-3, testing_width = 5000, criteria = 'lenient'):
+    print(internal_id)
     internal_id_tbl_subset = internal_id_tbl[internal_id_tbl.internal_id == internal_id]
     subset_index=internal_id_tbl_subset.rmsk_index.to_list()
-    rmsk_subset=config.filtered_table[config.filtered_table.index.isin(subset_index)]
+    rmsk_subset=repeatmasker_table[repeatmasker_table.index.isin(subset_index)]
     chrom=rmsk_subset.genoName.unique()[0]
     strand=rmsk_subset.strand.unique()[0]
     if strand =='-':
@@ -252,25 +256,22 @@ def twopass_calc(internal_id,internal_id_tbl,e_cutoff = 1e-3, testing_width = 10
         strand = -1
     else:
         strand = 1
-    target_species = config.target_species
-    species_table = config.species_table
-    if target_species == 'Homo_sapiens':
-        mafpath = f'/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/241genomes/241-mammalian-2020v2b.maf.{chrom}'
+    maf_filepath = f'{maf_dir}/{maf_file_prefix}.{chrom}'
 
     target_chrom = f'{target_species}.{chrom}'
-    index_maf = MafIO.MafIndex(f'{mafpath}.mafindex', mafpath, target_chrom)
+    index_maf = MafIO.MafIndex(f'{maf_filepath}.mafindex', maf_filepath, target_chrom)
     start_flanked=[min(start_list)-testing_width] + start_list + [max(end_list)]
     end_flanked = [min(start_list)] + end_list + [max(end_list)+testing_width]
     
     spliced_maf_full =index_maf.get_spliced(start_flanked,end_flanked,strand)
     
-    target_seq = np.char.upper(spliced_maf_full[spliced_maf_full.seqid.str.contains('Homo_sapiens')]['seq'].to_list())[0]
+    target_seq = np.char.upper(spliced_maf_full[spliced_maf_full.seqid.str.contains(target_species)]['seq'].to_list())[0]
  
     # Apply the optimized function to the DataFrame
     spliced_maf_full[['alignment_score', 'matched', 'gapped', 'gap_count']] = spliced_maf_full.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][testing_width:-testing_width]), target_seq[testing_width:-testing_width]), axis=1)
     #spliced_maf_full['meta_name'] =spliced_maf_full['seqid'].str.split('.').str[0]
     spliced_maf_full[['meta_name', 'chr_code']] = spliced_maf_full['seqid'].str.split('.', n=1, expand=True)
-    spliced_maf_age=spliced_maf_full.merge(species_table[['meta_name','ungapped_length','Estimated Time (MYA)']], how='left',on='meta_name')
+    spliced_maf_age=spliced_maf_full.merge(divergence_table[['meta_name','ungapped_length','Estimated Time (MYA)']], how='left',on='meta_name')
     #splice_maf_age_list.append(spliced_maf_age)
     spliced_maf_age['seq_length'] = spliced_maf_full['seq'].apply(len) - 2*testing_width
     lambda_ = 1.08;K = 0.28;H = 0.54;alpha = 2.0;beta = -2
@@ -315,36 +316,156 @@ def twopass_calc(internal_id,internal_id_tbl,e_cutoff = 1e-3, testing_width = 10
             beta=beta,
             gapped=row['gapped_back']
         )), axis=1)
-        second_pass=first_pass[(first_pass['E_value_front']<=e_cutoff)&(first_pass['E_value_back']<=e_cutoff)].copy()
+        if criteria == 'stringent':
+            second_pass=first_pass[(first_pass['E_value_front']<=e_cutoff)&(first_pass['E_value_back']<=e_cutoff)].copy()
+        else:
+            second_pass=first_pass[(first_pass['E_value_front']<=e_cutoff)|(first_pass['E_value_back']<=e_cutoff)].copy()
         if second_pass.shape[0] < 1:
             e_table = pd.DataFrame()
         else:
             e_table = second_pass
     return [e_table, spliced_maf_age]
 #%%
-
-#internal_id_list = ['THE1C_SINGLE_2007']
+criteria = 'lenient'
 with ProcessPoolExecutor(max_workers=80) as executor:
-    results = executor.map(twopass_calc, internal_id_list, repeat(internal_id_tbl))
-#%%
+    results = executor.map(twopass_calc, internal_id_list, itertools.repeat(criteria))
 e_table_list = []
 splice_maf_age_list = []
 for result in results:
     e_table_list.append(result[0])
     splice_maf_age_list.append(result[1])
-# %%
+#%% SAVE FILTERED E-VALUE TABLE LIST (LENIENT CRITERIA)
+import compress_pickle
+output_filepath = f'{output_dir}/{subfamily}_0.4_LENIENT.lzma'
+compress_pickle.dump(e_table_list, output_filepath, compression="lzma")
+#%% SAVE E-VALUE TABLE LIST (LENIENT CRITERIA)
+import compress_pickle
+output_filepath = f'{output_dir}/{subfamily}_raw_0.4_LENIENT.lzma'
+compress_pickle.dump(splice_maf_age_list, output_filepath, compression="lzma")
+#%%
+criteria = 'stringent'
+with ProcessPoolExecutor(max_workers=80) as executor:
+    results = executor.map(twopass_calc, internal_id_list, itertools.repeat(criteria))
+e_table_list = []
+splice_maf_age_list = []
+for result in results:
+    e_table_list.append(result[0])
+    splice_maf_age_list.append(result[1])
+#%% SAVE FILTERED E-VALUE TABLE LIST (STRINGENT CRITERIA)
+import compress_pickle
+output_filepath = f'{output_dir}/{subfamily}_0.4_LENIENT.lzma'
+compress_pickle.dump(e_table_list, output_filepath, compression="lzma")
+#%% SAVE E-VALUE TABLE LIST (STRINGENT CRITERIA)
+import compress_pickle
+output_filepath = f'{output_dir}/{subfamily}_raw_0.4_LENIENT.lzma'
+compress_pickle.dump(splice_maf_age_list, output_filepath, compression="lzma")
+#%%
+def make_teatime_table(e_table_list):
+    te_name_list = []
+    te_age_list = []
+    for idx, e_table in enumerate(e_table_list):
+        #print(idx)
+        if e_table.shape[0] > 0:
+            te_age = e_table['Estimated Time (MYA)'].max()
+        else:
+            te_age = np.nan
+        te_name = internal_id_list[idx]
+        te_name_list.append(te_name)
+        te_age_list.append(te_age)
+        if e_table.shape[0]>0:
+            for idx, row  in e_table.iterrows():
+                if row['meta_name'] == 'Homo_sapiens':
+                    seq = ''.join(row['seq'])  
+                    len_list.append(len(seq))
+    te_age_df=pd.DataFrame({
+    'te_name': te_name_list,
+    'te_age': te_age_list,
+    })
+    return te_age_df
+### COMPARE OUTPUT 
+#%% LOAD FILTERED E-VALUE TABLE LIST (LENIENT CRITERIA)
+import compress_pickle
+output_filepath = f'{output_dir}/{subfamily}_0.4_LENIENT.lzma'
+e_table_list_lenient=compress_pickle.load(output_filepath, compression="lzma")
+te_age_lenient = make_teatime_table(e_table_list_lenient)
+#%% LOAD FILTERED E-VALUE TABLE LIST (STRINGENT CRITERIA)
+import compress_pickle
+output_filepath = f'{output_dir}/{subfamily}_0.4_STRINGENT.lzma'
+e_table_list_stringent=compress_pickle.load(output_filepath, compression="lzma")
+te_age_stringent = make_teatime_table(e_table_list_stringent)
+#%% LOAD FILTERED E-VALUE TABLE LIST (ONE-PASS)
+import compress_pickle
+output_filepath = f'{output_dir}/{subfamily}_v0.3.lzma'
+e_table_list_onepass=compress_pickle.load(output_filepath, compression="lzma")
+te_age_onepass = make_teatime_table(e_table_list_onepass)
+#%% MERGE TEATIME TO INTERNAL ID
+te_age_idv_lenient = internal_id_tbl.merge(te_age_lenient, how='left', right_on='te_name', left_on='internal_id')
+te_age_idv_stringent = internal_id_tbl.merge(te_age_stringent, how='left', right_on='te_name', left_on='internal_id')
+te_age_idv_onepass = internal_id_tbl.merge(te_age_onepass, how='left', right_on='te_name', left_on='internal_id')
+#COMPARISON
+compare_te_age = te_age_idv_stringent.merge(te_age_idv_lenient, on = ['rmsk_index','internal_id','te_name'])
+#%% COUNT TE IN EACH AGE CATEGORY
+countFIRST = te_age_idv_onepass.groupby('te_age').size().reset_index(name='te_age_FIRST')
+countOR = te_age_idv_lenient.groupby('te_age').size().reset_index(name='te_age_LENIENT')
+countAND = te_age_idv_stringent.groupby('te_age').size().reset_index(name='te_age_STRINGENT')
+count_dist = pd.merge(countFIRST, countOR, on='te_age', how='outer').fillna(0)
+count_dist = pd.merge(count_dist, countAND, on='te_age', how='outer').fillna(0)
+#%% PLOT TEATIME DISTRIBUTION
+import matplotlib.pyplot as plt
+plt.rcParams['savefig.dpi'] = 600
+plt.rcParams['figure.dpi'] = 600
+fig, ax = plt.subplots()
+#grid = fig.add_gridspec(nrows = 300, ncols = 100, hspace=0)
+# Define bar height
+bar_height = 0.25
+y = range(len(count_dist['te_age']))
+# Plot each table's counts as horizontal bars with an offset on the y-axis
+bars1=ax.barh([i + 2 * bar_height for i in y], count_dist['te_age_FIRST'], height=bar_height, label='1st pass', align='center', color='lightgrey')
+bars2=ax.barh([i + bar_height for i in y], count_dist['te_age_LENIENT'], height=bar_height, label='2nd pass lenient', align='center', color = 'grey')
+bars3=ax.barh(y, count_dist['te_age_STRINGENT'], height=bar_height, label='2nd pass stringent', align='center', color='black')
+
+# Set y-ticks to match the categories
+ax.set_yticks([i + bar_height for i in y])
+ax.set_yticklabels(count_dist['te_age'])
+
+# Labels and title
+ax.set_xlabel('Count')
+ax.set_ylabel('te_age')
+#ax.set_xscale('log')
+ax.tick_params(axis='both', which='major', labelsize=8)
+ax.set_title(f'Distribution of TE age in {subfamily}')
+#ax.set_title('Category Count Comparison across 3 Tables (Horizontal Bars)')
+ax.legend()
+# Add annotations to each bar
+# For bars from Table 1
+for bar in bars1:
+    ax.text(bar.get_width() + 0.2, bar.get_y() + bar.get_height() / 2,
+            f'{int(bar.get_width())}', va='center', fontdict={'fontsize':6})
+
+# For bars from Table 2
+for bar in bars2:
+    ax.text(bar.get_width() + 0.2, bar.get_y() + bar.get_height() / 2,
+            f'{int(bar.get_width())}', va='center', fontdict={'fontsize':6})
+
+# For bars from Table 3
+for bar in bars3:
+    ax.text(bar.get_width() + 0.2, bar.get_y() + bar.get_height() / 2,
+            f'{int(bar.get_width())}', va='center', fontdict={'fontsize':6})
+plt.show()
+#%% DEBUG: FOR LOOP 
 e_table_list = []
 splice_maf_age_list = []
 i = 0
 e_cutoff=1e-3
 test_width = 5000
+criteria = 'lenient'
 for idx, internal_id in enumerate(['THE1C_COMPLETE_3080']):
 #for idx, internal_id in enumerate(internal_id_list):
     i = i+1
     print(f'process TE repeatmasker_index:\t{idx}\t{i}/{len(internal_id_list)}')
     internal_id_tbl_subset = internal_id_tbl[internal_id_tbl.internal_id == internal_id]
     subset_index=internal_id_tbl_subset.rmsk_index.to_list()
-    rmsk_subset=config.filtered_table[config.filtered_table.index.isin(subset_index)]
+    rmsk_subset=repeatmasker_table[repeatmasker_table.index.isin(subset_index)]
     chrom=rmsk_subset.genoName.unique()[0]
     strand=rmsk_subset.strand.unique()[0]
     if strand =='-':
@@ -356,13 +477,10 @@ for idx, internal_id in enumerate(['THE1C_COMPLETE_3080']):
         strand = -1
     else:
         strand = 1
-    target_species = config.target_species
-    species_table = config.species_table
-    if target_species == 'Homo_sapiens':
-        mafpath = f'/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/241genomes/241-mammalian-2020v2b.maf.{chrom}'
+    maf_filepath = f'{maf_dir}/{maf_file_prefix}.{chrom}'
 
     target_chrom = f'{target_species}.{chrom}'
-    index_maf = MafIO.MafIndex(f'{mafpath}.mafindex', mafpath, target_chrom)
+    index_maf = MafIO.MafIndex(f'{maf_filepath}.mafindex', maf_filepath, target_chrom)
     start_flanked=[min(start_list)-test_width] + start_list + [max(end_list)]
     end_flanked = [min(start_list)] + end_list + [max(end_list)+test_width]
     
@@ -375,7 +493,7 @@ for idx, internal_id in enumerate(['THE1C_COMPLETE_3080']):
     spliced_maf_full[['alignment_score', 'matched', 'gapped', 'gap_count']] = spliced_maf_full.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][test_width:-test_width]), target_seq[test_width:-test_width]), axis=1)
     #spliced_maf_full['meta_name'] =spliced_maf_full['seqid'].str.split('.').str[0]
     spliced_maf_full[['meta_name', 'chr_code']] = spliced_maf_full['seqid'].str.split('.', n=1, expand=True)
-    spliced_maf_age=spliced_maf_full.merge(species_table[['meta_name','ungapped_length','Estimated Time (MYA)']], how='left',on='meta_name')
+    spliced_maf_age=spliced_maf_full.merge(divergence_table[['meta_name','ungapped_length','Estimated Time (MYA)']], how='left',on='meta_name')
     #splice_maf_age_list.append(spliced_maf_age)
     spliced_maf_age['seq_length'] = spliced_maf_full['seq'].apply(len) -2*test_width
     lambda_ = 1.08;K = 0.28;H = 0.54;alpha = 2.0;beta = -2
@@ -420,56 +538,27 @@ for idx, internal_id in enumerate(['THE1C_COMPLETE_3080']):
             beta=beta,
             gapped=row['gapped_back']
         )), axis=1)
-        second_pass=first_pass[(first_pass['E_value_front']<=e_cutoff)|(first_pass['E_value_back']<=e_cutoff)].copy()
+        if criteria == 'stringent':
+            second_pass=first_pass[(first_pass['E_value_front']<=e_cutoff)&(first_pass['E_value_back']<=e_cutoff)].copy()
+        else:
+            second_pass=first_pass[(first_pass['E_value_front']<=e_cutoff)|(first_pass['E_value_back']<=e_cutoff)].copy()
         if second_pass.shape[0] < 1:
             e_table = pd.DataFrame()
         else:
             e_table = second_pass
 #%%
-import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_v0.4AND.lzma'
-compress_pickle.dump(e_table_list, output_filepath, compression="lzma")
-#%%
-import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_v0.4AND10k.lzma'
-compress_pickle.dump(e_table_list, output_filepath, compression="lzma")
-#%%
-import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_v0.4OR.lzma'
-e_table_list=compress_pickle.load(output_filepath, compression="lzma")
-#%%
-import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_v0.4AND.lzma'
-e_table_list=compress_pickle.load(output_filepath, compression="lzma")
-#%%
-import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_raw_v0.4AND.lzma'
-compress_pickle.dump(splice_maf_age_list, output_filepath, compression="lzma")
-#%%
-import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_raw_v0.4.lzma'
-splice_maf_age_list=compress_pickle.load(output_filepath, compression="lzma")
-#%%
-import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_v0.3.lzma'
-e_table_list=compress_pickle.load(output_filepath, compression="lzma")
-# %%
 te_name_list = []
 te_age_list = []
 len_list = []
 alignment_row_list = []
 alignment_max_list = []
-species_table = config.species_table
 for idx, e_table in enumerate(e_table_list):
     #print(idx)
     if e_table.shape[0] > 0:
         te_age = e_table['Estimated Time (MYA)'].max()
-    #elif e_table.shape[0] == 1:
-    #    te_age = 0
     else:
         te_age = np.nan
     #alignment_row = e_table[e_table['Estimated Time (MYA)'] == te_age].shape[0]
-    
     #alignment_max_list.append(alignment_max)
     #alignment_row_list.append(alignment_row)
     te_name = internal_id_list[idx]
@@ -490,268 +579,10 @@ te_age_df=pd.DataFrame({
     #'aln_row': alignment_row_list,
     #'aln_max':alignment_max_list,
 })
-#%% 1 aln check
-te_age_df[(te_age_df['aln_row']==1)&(te_age_df['aln_row']/te_age_df['aln_max']<0.5)]
-#%%
-te_age_idv_df = internal_id_tbl.merge(te_age_df, how='left', right_on='te_name', left_on='internal_id')
-#%%
-te_age_idv_dfFIRST = te_age_idv_df
-#%%
-te_age_idv_dfAND = te_age_idv_df
-#%%
-te_age_idv_dfAND10k = te_age_idv_df
-#%%
-te_age_idv_dfOR = te_age_idv_df
-#%%
-compare_te_age = te_age_idv_dfAND.merge(te_age_idv_dfOR, on = ['rmsk_index','internal_id','te_name','te_len'])
-# %%
-age_ref_table = pd.DataFrame(data=config.age_ref_table_template)
-age_set=te_age_idv_df['te_age'].sort_values().unique()
-# %%
-import matplotlib.pyplot as plt
-plt.rcParams['savefig.dpi'] = 600
-plt.rcParams['figure.dpi'] = 600
-fig = plt.figure(figsize=(5,2))
-grid = fig.add_gridspec(nrows = 10, ncols = 10, hspace=0)
-
-bar_axes = fig.add_subplot(grid[0:10,0:10])
-bar_axes.tick_params(axis='x', which='major', labelsize=8, labelrotation=90)
-bar_axes.tick_params(axis='y', which='major', labelsize=8)
-bar_container = bar_axes.bar(age_ref_table[age_ref_table['age'].isin(age_set)]['representative_age'], te_age_idv_df.groupby('te_age', dropna=False).count()['te_name'], color = 'black')
-bar_axes.set_title(f'Distribution of TE age in {subfamily}')
-bar_axes.set_ylabel('counts')
-bar_axes.bar_label(bar_container, fmt='{:,.0f}', fontsize=6)
-#%%
-#%%
-seqid_list = []
-seq_list = []
-perc_gap_list = []
-for idx, row in splice_maf_age_list[1].iterrows():
-    seqid=row['seqid']
-    seqid_list.append(seqid)
-    seq=''.join(row['seq'])
-    seq_list.append(seq)
-    perc_gap_list.append(seq.count('-')/len(seq)*100)
-#%%
-def calculate_perc_gap(row):
-    seq = ''.join(row['seq'])  
-    perc_gap = seq.count('-') / len(seq) * 100  
-    return perc_gap
-bins = [-0.1,0,10,20,30,40,50,60,70,80,90,100]
-perc_gap_count_list = []
-for sub_df in e_table_list:
-    if sub_df.shape[0]>0:
-        sub_df['perc_gap'] = sub_df.apply(calculate_perc_gap, axis=1)
-        sub_df['perc_binned'] = pd.cut(sub_df['perc_gap'], bins=bins, labels=list(range(1, len(bins))))
-        perc_binned_count=sub_df.groupby(['perc_binned']).count()
-        perc_gap_count=perc_binned_count['seqid'].values
-        perc_gap_count_list.append(perc_gap_count)
+#%% CHECK FOR ROWS WITH ONLY 1 ALINGMENT
+#te_age_df[(te_age_df['aln_row']==1)&(te_age_df['aln_row']/te_age_df['aln_max']<0.5)]
 
 
 #%%
-#test = e_table_list[0]
+# %%
 #%%
-perc_gap_freq_array = np.array([arr / np.sum(arr) for arr in perc_gap_count_list])
-#%%
-seq_tbl=pd.DataFrame({
-    'species': seqid_list,
-    'alignment': seq_list
-})
-# %%
-import matplotlib.pyplot as plt
-plt.rcParams['savefig.dpi'] = 600
-plt.rcParams['figure.dpi'] = 600
-fig = plt.figure(figsize=(6,4))
-grid = fig.add_gridspec(nrows = 5, ncols = 5, hspace=0)
-labels = ['0','10','20','30','40','50','60','70','80','90','100']
-box_axes = fig.add_subplot(grid[0:10,0:10])
-box_axes.boxplot(perc_gap_freq_array, 1,'', labels=labels)
-box_axes.set_ylabel('ratio')
-box_axes.set_xlabel('gap percentage')
-box_axes.set_title(f'THE1C gap percentage of alignment in MSA')# %%
-#%%
-# %% outliers investigation
-outlier_table=te_age_df[(te_age_df['te_age']>43.2)|(te_age_df['te_age'].isna())].sort_values(['te_age'])
-old_table=te_age_df[(te_age_df['te_age']>43.2)].sort_values(['te_age'])
-# %%
-old_te_call=old_table.index.to_list()
-# %%
-e_table_df=e_table_list[2007]
-e_table_df[e_table_df['Estimated Time (MYA)']>43.2][['Estimated Time (MYA)','E_value','E_value_front','E_value_back']]
-#%%
-age_ref_table = pd.DataFrame(data=config.age_ref_table_template)
-age_default_set=te_age_df['te_age'].sort_values().unique()
-#%%
-import matplotlib.pyplot as plt
-plt.rcParams['savefig.dpi'] = 600
-plt.rcParams['figure.dpi'] = 600
-fig = plt.figure(figsize=(5,20))
-grid = fig.add_gridspec(nrows = 300, ncols = 100, hspace=0)
-bar_axes = []
-for idx, e_table_index in enumerate(old_te_call):
-    print(idx)
-    e_table = e_table_list[e_table_index]
-    age_set=e_table['Estimated Time (MYA)'].sort_values().unique()
-    bar_axes.append(fig.add_subplot(grid[0+15*idx:15+15*idx,0:100]))
-    bar_axes[idx].tick_params(axis='x', which='major', labelsize=8, labelrotation=90)
-    bar_axes[idx].tick_params(axis='y', which='major', labelsize=8)
-    bar_container = bar_axes[idx].bar(age_ref_table[age_ref_table['age'].isin(age_set)]['age'], e_table.groupby('Estimated Time (MYA)', dropna=False).count()['seqid'], color = 'black')
-    age_anno=e_table['Estimated Time (MYA)'].max()
-    bar_axes[idx].text(0.95, 0.85, f'assigned_age: {age_anno} MYA\n{te_name_list[e_table_index]}', 
-            transform=bar_axes[idx].transAxes, 
-            fontsize=8, 
-            verticalalignment='top', 
-           horizontalalignment='right')
-    if idx < len(old_te_call)-1:
-        bar_axes[idx].set_xticks([])
-    bar_axes[idx].set_xlim(0, max(age_default_set)+1)
-#%%
-countFIRST = te_age_idv_dfFIRST.groupby('te_age').size().reset_index(name='te_age_FIRST')
-countOR = te_age_idv_dfOR.groupby('te_age').size().reset_index(name='te_age_LENIENT')
-countAND = te_age_idv_dfAND.groupby('te_age').size().reset_index(name='te_age_STRINGENT')
-count_dist = pd.merge(countFIRST, countOR, on='te_age', how='outer').fillna(0)
-te_age_idv_dfFIRST
-count_dist = pd.merge(count_dist, countAND, on='te_age', how='outer').fillna(0)
-#%%
-import matplotlib.pyplot as plt
-plt.rcParams['savefig.dpi'] = 600
-plt.rcParams['figure.dpi'] = 600
-fig, ax = plt.subplots()
-#grid = fig.add_gridspec(nrows = 300, ncols = 100, hspace=0)
-# Define bar height
-bar_height = 0.25
-y = range(len(count_dist['te_age']))
-
-# Plot each table's counts as horizontal bars with an offset on the y-axis
-bars1=ax.barh([i + 2 * bar_height for i in y], count_dist['te_age_FIRST'], height=bar_height, label='1st pass', align='center', color='lightgrey')
-bars2=ax.barh([i + bar_height for i in y], count_dist['te_age_LENIENT'], height=bar_height, label='2nd pass lenient', align='center', color = 'grey')
-bars3=ax.barh(y, count_dist['te_age_STRINGENT'], height=bar_height, label='2nd pass stringent', align='center', color='black')
-
-# Set y-ticks to match the categories
-ax.set_yticks([i + bar_height for i in y])
-ax.set_yticklabels(count_dist['te_age'])
-
-# Labels and title
-ax.set_xlabel('Count')
-ax.set_ylabel('te_age')
-#ax.set_xscale('log')
-ax.tick_params(axis='both', which='major', labelsize=8)
-ax.set_title(f'Distribution of TE age in {subfamily}')
-#ax.set_title('Category Count Comparison across 3 Tables (Horizontal Bars)')
-ax.legend()
-# Add annotations to each bar
-# For bars from Table 1
-for bar in bars1:
-    ax.text(bar.get_width() + 0.2, bar.get_y() + bar.get_height() / 2,
-            f'{int(bar.get_width())}', va='center', fontdict={'fontsize':6})
-
-# For bars from Table 2
-for bar in bars2:
-    ax.text(bar.get_width() + 0.2, bar.get_y() + bar.get_height() / 2,
-            f'{int(bar.get_width())}', va='center', fontdict={'fontsize':6})
-
-# For bars from Table 3
-for bar in bars3:
-    ax.text(bar.get_width() + 0.2, bar.get_y() + bar.get_height() / 2,
-            f'{int(bar.get_width())}', va='center', fontdict={'fontsize':6})
-
-plt.show()
-# %% investigate short fragment
-filtered_table[filtered_table.index.isin(np.arange(604841-5,604841+5))]
-# %%
-subfam_table
-# %%
-e_table_list = []
-splice_maf_age_list = []
-i = 0
-e_cutoff=1e-3
-for idx, internal_id in enumerate(['THE1C_SINGLE_2007']):
-    i = i+1
-    print(f'process TE repeatmasker_index:\t{idx}\t{i}/{len(internal_id_list)}')
-    internal_id_tbl_subset = internal_id_tbl[internal_id_tbl.internal_id == internal_id]
-    subset_index=internal_id_tbl_subset.rmsk_index.to_list()
-    rmsk_subset=config.filtered_table[config.filtered_table.index.isin(subset_index)]
-    chrom=rmsk_subset.genoName.unique()[0]
-    strand=rmsk_subset.strand.unique()[0]
-    if strand =='-':
-        internal_id_tbl_subset  = internal_id_tbl_subset.sort_index(ascending=False)
-    start_list=rmsk_subset.genoStart.to_list()
-    end_list=rmsk_subset.genoEnd.to_list()
-    if strand=='-':
-        strand = -1
-    else:
-        strand = 1
-    target_species = config.target_species
-    species_table = config.species_table
-    if target_species == 'Homo_sapiens':
-        mafpath = f'/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/241genomes/241-mammalian-2020v2b.maf.{chrom}'
-
-    target_chrom = f'{target_species}.{chrom}'
-    index_maf = MafIO.MafIndex(f'{mafpath}.mafindex', mafpath, target_chrom)
-    start_flanked=[min(start_list)-5000] + start_list + [max(end_list)]
-    end_flanked = [min(start_list)] + end_list + [max(end_list)+5000]
-    spliced_maf_full =index_maf.get_spliced(start_flanked,end_flanked,strand)
-    
-    target_seq = np.char.upper(spliced_maf_full[spliced_maf_full.seqid.str.contains('Homo_sapiens')]['seq'].to_list())[0]
- 
-    # Apply the optimized function to the DataFrame
-    spliced_maf_full[['alignment_score', 'matched', 'gapped', 'gap_count']] = spliced_maf_full.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][5000:-5000]), target_seq[5000:-5000]), axis=1)
-    #spliced_maf_full['meta_name'] =spliced_maf_full['seqid'].str.split('.').str[0]
-    spliced_maf_full[['meta_name', 'chr_code']] = spliced_maf_full['seqid'].str.split('.', n=1, expand=True)
-    spliced_maf_age=spliced_maf_full.merge(species_table[['meta_name','ungapped_length','Estimated Time (MYA)']], how='left',on='meta_name')
-    splice_maf_age_list.append(spliced_maf_age)
-    spliced_maf_age['seq_length'] = spliced_maf_full['seq'].apply(len) -10000 
-    lambda_ = 1.08;K = 0.28;H = 0.54;alpha = 2.0;beta = -2
-
-    spliced_maf_age[['p_value', 'E_value']] = spliced_maf_age.apply(lambda row: pd.Series(BLAST_StoP(
-        alignment_score=row['alignment_score'],
-        m=row['seq_length'],
-        n=row['ungapped_length'],
-        lambda_=lambda_,
-        K=K,
-        H=H,
-        alpha=alpha,
-        beta=beta,
-        gapped=row['gapped']
-    )), axis=1)
-    spliced_maf_age[['alignment_score_front', 'matched_front', 'gapped_front', 'gap_count_front']] = spliced_maf_age.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][:5000]), target_seq[:5000]), axis=1)
-    spliced_maf_age[['p_value_front', 'E_value_front']] = spliced_maf_age.apply(lambda row: pd.Series(BLAST_StoP(
-            alignment_score=row['alignment_score_front'],
-            m=5000,
-            n=row['ungapped_length'],
-            lambda_=lambda_,
-            K=K,
-            H=H,
-            alpha=alpha,
-            beta=beta,
-            gapped=row['gapped_front']
-        )), axis=1)
-        
-    spliced_maf_age[['alignment_score_back', 'matched_back', 'gapped_back', 'gap_count_back']] = spliced_maf_age.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][-5000:]), target_seq[-5000:]), axis=1)
-    spliced_maf_age[['p_value_back', 'E_value_back']] = spliced_maf_age.apply(lambda row: pd.Series(BLAST_StoP(
-            alignment_score=row['alignment_score_back'],
-            m=5000,
-            n=row['ungapped_length'],
-            lambda_=lambda_,
-            K=K,
-            H=H,
-            alpha=alpha,
-            beta=beta,
-            gapped=row['gapped_back']
-        )), axis=1)
-    first_pass = spliced_maf_age[spliced_maf_age['E_value']<=e_cutoff].copy()
-    if first_pass.shape[0] < 1:
-        e_table = pd.DataFrame()
-    else:
-        e_table = first_pass
-    e_table_list.append(e_table)
-# %%
-internal_id_tbl[internal_id_tbl['internal_id']=='THE1C_SINGLE_360']
-# %%
-filtered_table[filtered_table.index==1025601]
-# %%
-temp = e_table_list[630]
-# %%
-e_cutoff = 1e-3
-temp[(temp['E_value_front']<=e_cutoff)&(temp['E_value_back']<=e_cutoff)].copy()
-# %%

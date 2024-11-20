@@ -1,34 +1,36 @@
 #%%
 import pandas as pd
 import os
-import sys
-sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age')
-import config_main as config
+from ma_mapper import utility
 import numpy as np
 def find_nearest(array, value):
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
     return array[idx]
-age_canon = config.age_canon[:-1]
-#%%
-mean_phyloP_path  = '/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/phd_project_development/data/_mapper_output/hg38_main/phyloP.txt'
-mean_phyloP = pd.read_csv(mean_phyloP_path, sep='\t', index_col = 0).reset_index()
-#%%
-combined_te_age_div_folder = config.combined_age_div_folder
-combined_age_div = f'{combined_te_age_div_folder}/all_subfamilies.txt'
-combined_age_div_tbl = pd.read_csv(combined_age_div, sep='\t')
+#%% INPUT PARAMETERS
+repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
+mean_phyloP_filepath  = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/output/ma_mapper/hg38_main/phyloP.txt'
+combined_table_dir = None
+subfamily_list = ['MER11A']
+#%% INITIATION
+age_canon = utility.age_canon()[:-1]
+mean_phyloP = pd.read_csv(mean_phyloP_filepath, sep='\t', index_col = 0).reset_index()
+if combined_table_dir is None:
+    combined_table_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+combined_te_age_filepath = f'{combined_table_dir}/all_subfamilies.itd.txt'
+combined_te_age_df = pd.read_csv(combined_te_age_filepath, sep='\t')
 #%%
 collector = []
 collector_ = []
 _collector=[]
 __collector=[]
 _collector__=[]
-for subfamily in config.subfamily_list:
+for subfamily in subfamily_list:
     print(subfamily)
     subfamily_filename = subfamily.replace('/','_')
     #subfamily = 'THE1C'
     _collector.append(subfamily_filename)
-    combined_filepath = f'{combined_te_age_div_folder}/{subfamily_filename}.txt'
+    combined_filepath = f'{combined_table_dir}/{subfamily_filename}.itd.txt'
     subfam_combined=pd.read_csv(combined_filepath, sep='\t')
     median_raw = subfam_combined['te_age'].median()
     collector.append(median_raw)
@@ -44,8 +46,6 @@ subfam_age=pd.DataFrame(prep_dict)
 subfam_age_phyloP=subfam_age.merge(mean_phyloP, on='subfamily')
 #%%
 subset = subfam_age_phyloP[(subfam_age_phyloP['median_adj_te_age'] > 0) & (subfam_age_phyloP['median_adj_te_age'] <= 96.0)]
-
-
 #%%
 import matplotlib.pyplot as plt
 fig, ax = plt.subplots(figsize=(10,4))
@@ -64,14 +64,6 @@ from scipy import stats
 res = stats.linregress(subset['median_adj_te_age'], subset['mean_phyloP'])
 ax.plot(subset['median_adj_te_age'], res.intercept + res.slope * subset['median_adj_te_age'], color='red', label='Regression Line (0-96)', linewidth=1, alpha=0.5)
 
-#ax.scatter(mean_phylop, mean_phylop_447, alpha=1,s=2, color='black')
-# Fit a line of best fit
-#from scipy import stats
-#res = stats.linregress(mean_phylop, mean_phylop_447)
-# Line of best fit
-#ax.plot(mean_phylop, res.intercept + res.slope*mean_phylop, color='red', label='Line of Best Fit',linewidth=1, alpha=0.2)
-#ax.set_ylim(-1.2,0.5)
-#ax.set_xlim(-1.2,0.5)
 set_size=subfam_age_phyloP[(subfam_age_phyloP['median_adj_te_age'] > 0)].shape[0]
 ax.text(0.99, 0.01, f'TE subfamilies n={set_size}', 
         transform=ax.transAxes, 

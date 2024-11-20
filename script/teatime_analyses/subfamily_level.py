@@ -1,21 +1,18 @@
 #%%
 import pandas as pd
 import numpy as np
-import plotly.graph_objects as go
-import logging
-import os
-from concurrent.futures import ProcessPoolExecutor
-from tqdm import tqdm
-import sys
-sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age')
-import config_main as config
-#import config_mm39_dfam as config
+from ma_mapper import utility
+#%% INPUT PARAMETERS
+repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
+combined_table_dir = None
+internal_id_dir = None
+age_table_dir = None
+te_alignment_dir = None
+#%%
 def find_nearest(array, value):
     array = np.asarray(array)
     idx = (np.abs(array - value)).argmin()
     return array[idx]
-age_canon = config.age_canon
-age_ref_table = pd.DataFrame(data=config.age_ref_table_template)
 def consensus(matrix, cutoff=0.5):
     num_to_nucleotide = {0: "-", 1: "A", 2: "C", 3: "T", 4: "G"}
     consensus = []
@@ -126,21 +123,24 @@ def div_calc(seq1, seq2):
 def num_to_seq(sequence):
     num_to_nucleotide = {0: "-", 1: "A", 2: "C", 3: "T", 4: "G"}
     return ''.join(num_to_nucleotide.get(int(num), 'N') for num in sequence)
-#%%
-repeatmasker_table  = config.rmskout_table
+
+#%% INITIATION
+age_canon = utility.age_canon()
+age_ref_table_template = utility.age_reference_table()
+age_ref_table = pd.DataFrame(data=age_ref_table_template).iloc[0:-1]
+repeatmasker_table  = utility.repeatmasker_prep(repeatmasker_filepath)
 repeatmasker_table['rmsk_index'] = repeatmasker_table.index
-combined_te_age_div_folder = config.combined_age_div_folder
-combined_te_age_tbl = f'{combined_te_age_div_folder}/all_subfamilies.txt'
-combined_te_age_df = pd.read_csv(combined_te_age_tbl, sep='\t')
+if combined_table_dir is None:
+    combined_table_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+combined_te_age_filepath = f'{combined_table_dir}/all_subfamilies.itd.txt'
+combined_te_age_df = pd.read_csv(combined_te_age_filepath, sep='\t')
 #%%
 repeatmasker_update=repeatmasker_table.merge(combined_te_age_df, how = 'left', on='rmsk_index')
 #repeatmasker_update_path = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/data/_mapper_output/hg38_repeatmasker/repeatmasker_update/age_hg38.txt'
 #repeatmasker_update = pd.read_csv(repeatmasker_update_path, sep='\t', low_memory=False,index_col=0)
 #%%
 test = repeatmasker_update[repeatmasker_update['repName']=='L1HS']
-#test[test['internal_id']=='MER11A_SINGLE_233']
 #%%
-#age_df = repeatmasker_update[~repeatmasker_update.tag.isna()].copy()
 age_df = repeatmasker_update
 #%%
 age_df['div_percent'] = age_df['te_div']
@@ -163,9 +163,6 @@ comparable_cat_color = ['#D7B4F8','#CE9BF7','#C481F5','#B966F4','#B358F3','#A637
 comparable_cat.reverse()
 comparable_cat_color.reverse()
 # %%
-#age_df.to_csv('/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/data/_mapper_output/hg38_repeatmasker/repeatmasker_update/age_hg38.txt', sep='\t')
-# %%
-
 # Create a custom mapping for specific subclasses
 custom_groups = {
     'SINE/Alu': 'SINE/Alu',
@@ -201,14 +198,11 @@ for subclass in comparable_cat:
 
 # Apply the custom group to the repClass_ column
 age_df['custom_group'] = age_df['repClass'].map(custom_groups).fillna(age_df['repClass'])
-# %% select subfam
+# %% select subfamily
 age_df_sub=age_df[age_df['repName']=='L1PA8']
-#test=age_df_sub[age_df_sub['te_age'].isna()]
-#AGE SPREAD\
-#age_df_sub.fillna(0, inplace=True)
+#AGE SPREAD
 age_df_sub=age_df_sub[~age_df_sub['te_age'].isna()]
-#age_set=age_df_sub['te_age'].sort_values().unique()
-age_set=config.age_canon
+age_set=utility.age_canon()
 import matplotlib.pyplot as plt
 plt.rcParams['savefig.dpi'] = 600
 plt.rcParams['figure.dpi'] = 600
@@ -239,12 +233,9 @@ for idx, age in enumerate(age_set[:7]):
     # Set the new y-ticks without 0
     bar_axes[idx].set_yticks(yticks)
     bar_axes[idx].set_xlim(0, 110)
-#fig.title('L1HS', fontsize='small')
-
-    #bar_axes[idx].set_ylim(0, max_count)
 #%%
-import statsmodels.api as sm
-from scipy import stats
+#import statsmodels.api as sm
+#from scipy import stats
 age_df_sub=age_df[age_df['repName']=='L1HS']
 #%%
 age_df_sub=age_df_sub[~age_df_sub['te_age'].isna()]
@@ -264,6 +255,7 @@ age_count=age_df_sub.groupby(['div_age_mya', 'te_age']).count().reset_index()[['
 #X = sm.add_constant(age_count['te_age'])
 #model = sm.WLS(age_count['binned'], X, weights=age_count['count'])
 #results = model.fit()
+#%%
 import matplotlib.pyplot as plt
 
 plt.rcParams['savefig.dpi'] = 600
@@ -277,31 +269,33 @@ plot_axes.scatter(age_count['te_age'], age_count['div_age_mya'], s=age_count['co
 plot_axes.set_ylabel('div')
 plot_axes.set_xlabel('te_age (MYA)')
 #%%
-
-#%%
-import sys
 import pandas as pd
-sys.path.append('/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/')
-sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age')
-import config_hg38 as config
 from ma_mapper import mapper
-from ma_mapper import custom_cmap
 import numpy as np
 subfamily= 'THE1C'
-alignment_file = f'{config.te_alignment_folder}/{subfamily}.fasta.aligned'
+subfamily_filename = subfamily.replace('/','_')
+if te_alignment_dir is None:
+    te_alignment_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+alignment_file = f'{te_alignment_dir}/{subfamily}.fasta.aligned'
 alignment_filtered, metadata_filtered= mapper.parse_and_filter(alignment_file,col_threshold = 0.10, col_content_threshold = 0.10, row_threshold = 0.10)
-age_table = f'{config.te_age_folder}/{subfamily}.txt'
-age_tbl_df = pd.read_csv(age_table, sep='\t')
-internal_id_tbl = f'{config.internal_id_folder}/{subfamily}.txt'
-internal_id_df = pd.read_csv(internal_id_tbl, sep='\t')
+if age_table_dir is None:
+    age_table_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+teatime_filepath = f'{age_table_dir}/{subfamily_filename}.teatime.txt'
+age_tbl_df = pd.read_csv(teatime_filepath, sep='\t')
+
+if internal_id_dir is None:
+    internal_id_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+internal_id_filepath = f'{internal_id_dir}/{subfamily_filename}.internal_id.txt'
+internal_id_df = pd.read_csv(internal_id_filepath, sep='\t')
 internal_id_sort = internal_id_df.sort_values('rmsk_index')
+
 te_age_internal_id=internal_id_sort.merge(age_tbl_df, on='internal_id', how='left')
 age_default_id = pd.DataFrame()
 te_age_internal_id=te_age_internal_id.merge(age_df['binned'], how='left',left_on='rmsk_index', right_index=True)
 age_default_id['internal_id'] = subfamily + '_' + te_age_internal_id.index.astype(str)
 age_default_id[['te_age','binned']] = te_age_internal_id[['te_age','binned']]
 metadata_age = mapper.match_age_to_id_metadata(metadata_filtered, age_table=age_default_id)
-# %%
+#%%
 metadata_age.fillna(0, inplace=True)
 age_set=metadata_age['te_age'].sort_values().unique()
 #%%
@@ -313,30 +307,28 @@ for age in age_set:
     aligment_sub = alignment_filtered[sub_index]
     consensus_list.append(consensus(aligment_sub))
     degenerate_consensus_list.append(degenerate_consensus(aligment_sub))
-# %%
+#%%
 for idx, age in enumerate(age_set):
     main_seq = degenerate_consensus_list[idx]
     for idx2, age2 in enumerate(age_set):
         test_seq = degenerate_consensus_list[idx2]
         div=div_calc(main_seq, test_seq)
         print(f'TEage\t{age}\tvs\tTEage\t{age2}:\t{div*100}')
-# %%
+#%%
 overall_consensus=degenerate_consensus(alignment_filtered)
 div_list = []
 for row in alignment_filtered:
     div_list.append(div_calc(overall_consensus,num_to_seq(row))*100)
-# %%
+#%%
 metadata_age['div_test'] = div_list
-# %%
-num_to_seq(alignment_filtered[9729])
-# %%
-div_calc(overall_consensus,alignment_filtered[9729])*100
-# %%
+#num_to_seq(alignment_filtered[9729])
+#div_calc(overall_consensus,alignment_filtered[9729])*100
+#%%
 bins = [-0.1]
 for i in range(0,51):
     bins.append(i+0.9)
 metadata_age['binned_test'] = pd.cut(metadata_age['div_test'], bins=bins, labels=list(range(0,51)))
-# %%
+#%%
 metadata_age.fillna(0, inplace=True)
 age_set=metadata_age['te_age'].sort_values().unique()
 import matplotlib.pyplot as plt
@@ -362,4 +354,4 @@ for idx, age in enumerate(age_set):
             verticalalignment='top', 
             horizontalalignment='right')
     bar_axes[idx].set_ylim(0, max_count)
-# %%
+#%%
