@@ -1,4 +1,4 @@
-# TEATIME 0.5
+# TEATIME 0.5.1
 Transposable Element Age - Time of Integration Mapping in Evolution
 
 **This repo**: a collection of python script for TE age assignment using TEATIME approach
