@@ -5,6 +5,7 @@ Transposable Element Age - Time of Integration Mapping in Evolution
 
 ## Quick links
 - [Dependencies](#dependencies)
+- [Prerequiste](#prerequiste)
 - [Usage](#usage)
 - [Older versions](#older-versions)
 - [Debug](#debug)
@@ -15,6 +16,30 @@ Transposable Element Age - Time of Integration Mapping in Evolution
 - numpy
 - biopython
 - matplotlib
+
+## Prerequiste 
+The most important part of TEATIME approach is MAF file of multi-species dataset. To allow random-access, the uncompressed MAF file has to be indexed by MafIO() from biopython package. 
+
+Because of the size of Zoonomia multiple alignment (almost 1TB compressed), it was impossible to have enough memory for indexing. 
+
+So, the workaround for this issue is to manually divide MAF file into smaller pieces by chromosome entries. 
+
+There are several ways to do this, but for this project, we use [**gztool**](https://github.com/circulosmeos/gztool) to access portion of the MAF file by byte position, look for chromosome boundaries and extract file content from the coordinates. 
+
+As of now, the scripts will work with this specific naming system:
+```
+<prefix>.maf.<chromosome>
+```
+For example, here are the filenames used in the project:
+```
+/241-mammalian-2020v2b.maf.chr1
+/241-mammalian-2020v2b.maf.chr1.mafindex
+/241-mammalian-2020v2b.maf.chr2
+/241-mammalian-2020v2b.maf.chr2.mafindex
+...
+/241-mammalian-2020v2b.maf.chrY
+/241-mammalian-2020v2b.maf.chrY.mafindex
+```
 
 ## Usage 
 ### (optional) annotation mending  
