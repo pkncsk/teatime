@@ -3,16 +3,8 @@ import numpy as np
 import pandas as pd
 from Bio.AlignIO import MafIO
 from concurrent.futures import ProcessPoolExecutor
-import sys
-sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age')
-import dev.ma_mapper.script.config_main as config
-sys.path.append('/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/')
-from ma_mapper import extract_maf
+from ma_mapper import extract_maf, utility
 MafIO.MafIndex.get_spliced = extract_maf.get_spliced_mod
-#import config_mm39_dfam as config
-#sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/varyzer/stable')
-#import config
-#import config_baseline as config
 import os
 import time
 from datetime import datetime
@@ -20,13 +12,21 @@ import shutil
 import glob
 import logging
 import math
-import itertools
+#%% INPUT PARAMETERS
+target_species = 'Homo_sapiens'
+divergence_table_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/zoonomia_divergence_ref_table/species241_info.tsv'
+subfamily_list = ['MER11A']
+repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
+maf_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/multi_species_multiple_alignment_maf/zoonomia_241_species'
+maf_file_prefix = '241-mammalian-2020v2b.maf'
+internal_id_dir = None
+e_table_dir = None
 #%% math function for blast score calculation
 def affine_count_simple(str1,str2,
     matchWeight = 1,
-    mismatchWeight = 11,
-    gapWeight = 10,
-    extendedgapWeight = 7,
+    mismatchWeight = 1,
+    gapWeight = 4,
+    extendedgapWeight = 1,
     ):
     gapped = False
     str1 = str1.lower()
@@ -179,7 +179,7 @@ def affine_count_simple_optimized(seq_array, target_seq,
     }
     seq_array = np.char.upper(seq_array)
     target_seq = np.char.upper(target_seq)
-    
+    #print(''.join(seq_array))
     match = np.array([seq in IUPAC_CODES.get(target, set()) for seq, target in zip(seq_array, target_seq)])
     gap = (seq_array == '-')
     mismatch = ~match & ~gap
@@ -198,6 +198,7 @@ def affine_count_simple_optimized(seq_array, target_seq,
     gap_count = gap.sum()
     
     return pd.Series([alignment_score, matched, gapped, gap_count])
+
 def calculate_metrics(row):
     matched = row['matched']
     gap_count = row['gap_count']
@@ -234,28 +235,24 @@ def calculate_metrics(row):
     })
 
 #%%
-def e_val_engine_full(chrom, strand, start_list, end_list, e_cutoff=1e-3):
- 
-    if strand=='-':
-        strand = -1
-    else:
-        strand = 1
-    target_species = config.target_species
-    species_table = config.species_table
-    if target_species == 'Homo_sapiens':
-        mafpath = f'/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/241genomes/241-mammalian-2020v2b.maf.{chrom}'
-
+def e_val_engine_full(chrom, 
+                      strand, 
+                      start_list, 
+                      end_list, 
+                      maf_filepath,
+                      e_cutoff=1e-3, 
+                      target_species = 'Homo_sapiens'):
+    
     target_chrom = f'{target_species}.{chrom}'
-    index_maf = MafIO.MafIndex(f'{mafpath}.mafindex', mafpath, target_chrom)
+    index_maf = MafIO.MafIndex(f'{maf_filepath}.mafindex', maf_filepath, target_chrom)
     spliced_maf_full =index_maf.get_spliced(start_list,end_list,strand)
 
-    target_seq = np.char.upper(spliced_maf_full[spliced_maf_full.seqid.str.contains('Homo_sapiens')]['seq'].to_list())[0]
- 
+    target_seq = np.char.upper(spliced_maf_full[spliced_maf_full.seqid.str.contains(target_species)]['seq'].to_list())[0]
+
     # Apply the optimized function to the DataFrame
     spliced_maf_full[['alignment_score', 'matched', 'gapped', 'gap_count']] = spliced_maf_full.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][5000:-5000]), target_seq[5000:-5000]), axis=1)
-    #spliced_maf_full['meta_name'] =spliced_maf_full['seqid'].str.split('.').str[0]
     spliced_maf_full[['meta_name', 'chr_code']] = spliced_maf_full['seqid'].str.split('.', n=1, expand=True)
-    spliced_maf_age=spliced_maf_full.merge(species_table[['meta_name','ungapped_length','Estimated Time (MYA)']], how='left',on='meta_name')
+    spliced_maf_age=spliced_maf_full.merge(divergence_table[['meta_name','ungapped_length','Estimated Time (MYA)']], how='left',on='meta_name')
     spliced_maf_age['seq_length'] = spliced_maf_full['seq'].apply(len) - 10000
     lambda_ = 1.08;K = 0.28;H = 0.54;alpha = 2.0;beta = -2
 
@@ -274,14 +271,93 @@ def e_val_engine_full(chrom, strand, start_list, end_list, e_cutoff=1e-3):
     if first_pass.shape[0] < 1:
         return pd.DataFrame()
     else:
-        return first_pass
+        first_pass[['alignment_score_front', 'matched_front', 'gapped_front', 'gap_count_front']] = first_pass.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][:5000]), target_seq[:5000]), axis=1)
+        first_pass[['p_value_front', 'E_value_front']] = first_pass.apply(lambda row: pd.Series(BLAST_StoP(
+            alignment_score=row['alignment_score_front'],
+            m=5000,
+            n=row['ungapped_length'],
+            lambda_=lambda_,
+            K=K,
+            H=H,
+            alpha=alpha,
+            beta=beta,
+            gapped=row['gapped_front']
+        )), axis=1)
+        
+        first_pass[['alignment_score_back', 'matched_back', 'gapped_back', 'gap_count_back']] = first_pass.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][-5000:]), target_seq[-5000:]), axis=1)
+        first_pass[['p_value_back', 'E_value_back']] = first_pass.apply(lambda row: pd.Series(BLAST_StoP(
+            alignment_score=row['alignment_score_back'],
+            m=5000,
+            n=row['ungapped_length'],
+            lambda_=lambda_,
+            K=K,
+            H=H,
+            alpha=alpha,
+            beta=beta,
+            gapped=row['gapped_back']
+        )), axis=1)
+        second_pass=first_pass[(first_pass['E_value_front']<=e_cutoff)|(first_pass['E_value_back']<=e_cutoff)].copy()
+        e_table = second_pass.apply(calculate_metrics, axis=1).sort_values('divergence',ascending =True)
+        if second_pass.shape[0] >1:
+            return e_table
+        else:
+            flanked_tbl = spliced_maf_age.copy()
+            flanked_tbl[['alignment_score_front', 'matched_front', 'gapped_front', 'gap_count_front']] = flanked_tbl.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][:5000]), target_seq[:5000]), axis=1)
+            flanked_tbl[['p_value_front', 'E_value_front']] = flanked_tbl.apply(lambda row: pd.Series(BLAST_StoP(
+                alignment_score=row['alignment_score_front'],
+                m=5000,
+                n=row['ungapped_length'],
+                lambda_=lambda_,
+                K=K,
+                H=H,
+                alpha=alpha,
+                beta=beta,
+                gapped=row['gapped_front']
+            )), axis=1)
+            flanked_tbl[['alignment_score_back', 'matched_back', 'gapped_back', 'gap_count_back']] = flanked_tbl.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][-5000:]), target_seq[-5000:]), axis=1)
+            flanked_tbl[['p_value_back', 'E_value_back']] = flanked_tbl.apply(lambda row: pd.Series(BLAST_StoP(
+                alignment_score=row['alignment_score_back'],
+                m=5000,
+                n=row['ungapped_length'],
+                lambda_=lambda_,
+                K=K,
+                H=H,
+                alpha=alpha,
+                beta=beta,
+                gapped=row['gapped_back']
+            )), axis=1)
+            # Add columns to determine match types
+            flanked_tbl['match_front'] = flanked_tbl['E_value_front'] <= e_cutoff
+            flanked_tbl['match_back'] = flanked_tbl['E_value_back'] <= e_cutoff
+
+            # Create additional columns for summary
+            flanked_tbl['front_only'] = flanked_tbl['match_front'] & ~flanked_tbl['match_back']
+            flanked_tbl['back_only'] = ~flanked_tbl['match_front'] & flanked_tbl['match_back']
+            flanked_tbl['both'] = flanked_tbl['match_front'] & flanked_tbl['match_back']
+            flanked_tbl['nonmatch'] = ~flanked_tbl['match_front'] & ~flanked_tbl['match_back']
+
+            # Summarize the counts
+            summary = {
+                'total_count': len(flanked_tbl),
+                'match_count': flanked_tbl['match_front'].sum() + flanked_tbl['match_back'].sum() -  flanked_tbl['both'].sum(),
+                'front_only_count': flanked_tbl['front_only'].sum(),
+                'back_only_count': flanked_tbl['back_only'].sum(),
+                'both_count': flanked_tbl['both'].sum(),
+                'nonmatch_count': flanked_tbl['nonmatch'].sum()
+            }
+
+            e_table = e_table[['chr_code','divergence','%iden','%gap','BLAST','E_value','%iden_flanks']]
+            e_table['match_total'] = [[summary['match_count'],summary['total_count']]]
+            e_table['front_back'] = [[summary['front_only_count'],summary['back_only_count']]]
+            e_table['both_non'] = [[summary['both_count'],summary['nonmatch_count']]]
+            e_table.columns = ['species','chr_code','divergence','%iden','%gap','BLAST','E_value','%iden_flanks','%gap_flanks','E_val_flanks']
+            return e_table
 
 #%%
-def e_val_calc(internal_id):
-    #print(f'{internal_id}')
+def e_val_calc(internal_id, target_species = 'Homo_sapiens'):
     internal_id_tbl_subset = internal_id_tbl[internal_id_tbl.internal_id == internal_id]
     subset_index=internal_id_tbl_subset.rmsk_index.to_list()
-    rmsk_subset=config.filtered_table[config.filtered_table.index.isin(subset_index)]
+    rmsk_subset=repeatmasker_table[repeatmasker_table.index.isin(subset_index)]
     chrom=rmsk_subset.genoName.unique()[0]
     strand=rmsk_subset.strand.unique()[0]
     if strand =='-':
@@ -295,40 +371,27 @@ def e_val_calc(internal_id):
     start_flanked=[min(start_list)-5000] + start_list + [max(end_list)]
     end_flanked = [min(start_list)] + end_list + [max(end_list)+5000]
     try:
-        E_table=e_val_engine_full(chrom, strand, start_flanked, end_flanked)
+        maf_filepath = f'{maf_dir}/{maf_file_prefix}.{chrom}'
+        E_table=e_val_engine_full(chrom, strand, start_flanked, end_flanked,maf_filepath, e_cutoff=1e-3, target_species=target_species)
     except UnboundLocalError:
         print(internal_id)
-        # NOTE table join
     E_table['internal_id'] = internal_id
     return E_table
-#%% DEBUG
-subfamily = 'THE1C'
-subfamily_filename = subfamily.replace('/','_') 
-input_folder = config.internal_id_folder
-input_filepath = f'{input_folder}/{subfamily_filename}.txt'
-internal_id_tbl = pd.read_csv(input_filepath, sep='\t')
-internal_id_list = internal_id_tbl.internal_id.unique()
-#%% DEBUG
-results = []
-#for internal_id in ['AluYc3_SINGLE_71','AluYc3_SINGLE_72','AluYc3_SINGLE_73']:
-for internal_id in internal_id_list:
-    print(internal_id)
-    results.append(e_val_calc(internal_id))
-#%% DEBUG
-#output_table=pd.concat(results)
 #%%
-def e_val_calc_batch(subfamily):
-    #load config
-    input_folder = config.internal_id_folder
-    output_folder = config.e_value_folder
-    if os.path.isdir(output_folder) == False:
-        os.mkdir(output_folder)
+def e_val_calc_batch(subfamily,
+                     internal_id_dir,
+                     e_table_dir):
     subfamily_filename = subfamily.replace('/','_') 
-    input_filepath = f'{input_folder}/{subfamily_filename}.txt'
+    print(repeatmasker_filepath)
+    if internal_id_dir is None:
+        internal_id_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+    input_filepath = f'{internal_id_dir}/{subfamily_filename}.internal_id.txt'
     global internal_id_tbl
     internal_id_tbl = pd.read_csv(input_filepath, sep='\t')
-    output_filepath = f'{output_folder}/{subfamily_filename}.txt'
-    operation_log_path = f'{output_folder}/op_log.log'
+    if e_table_dir is None:
+        e_table_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+    output_filepath = f'{e_table_dir}/{subfamily_filename}.e_table.txt'
+    operation_log_path = f'{e_table_dir}/op_log.log'
     #setup logger
     logging.root.handlers = []
     logging.basicConfig(level=logging.DEBUG,
@@ -344,13 +407,12 @@ def e_val_calc_batch(subfamily):
         start_time = time.time()
         now = datetime.now()
         logging.info(f'process: {subfamily}')
-        output_file = f'{output_folder}/{subfamily_filename}.txt'
         internal_id_list = internal_id_tbl.internal_id.unique()
         id_count=len(internal_id_list)
         logging.info('entry counts: '+str(id_count))
         #print('checkpoint1')
         if id_count > 100:
-            output_temp_folder = f'{output_folder}/{subfamily_filename}'
+            output_temp_folder = f'{e_table_dir}/{subfamily_filename}'
             if os.path.isdir(output_temp_folder) == False:
                 os.mkdir(output_temp_folder)
             logging.info('over 100 count, spitting table')
@@ -373,11 +435,6 @@ def e_val_calc_batch(subfamily):
 
                     for result in results:
                         df_list.append(result)
-                    #for i, df in enumerate(df_list):
-                    #    print(f"DataFrame {i}:: internal_id {id_sublist[i]}: Shape = {df.shape}")
-                    #for te_id in internal_id_list:
-                    #    result=e_val_calc(te_id)
-                    #    df_list.append(result)
                     # NOTE: print temporary table out in case of multiple parts to avoid overhead issue
                     output_table=pd.concat(df_list)
                     output_table.to_csv(output_file_temp, sep='\t', index=False)
@@ -394,8 +451,8 @@ def e_val_calc_batch(subfamily):
                 else:
                     currentable = pd.read_csv(table_filename, sep='\t')
                     temp_df=pd.concat([temp_df, currentable], axis=0, ignore_index=True)
-            temp_df.to_csv(output_file, sep='\t', index=False)
-            logging.info(f'done, saving the table at: {output_file}')
+            temp_df.to_csv(output_filepath, sep='\t', index=False)
+            logging.info(f'done, saving the table at: {output_filepath}')
             logging.info('cleaning up temporary files')
             shutil.rmtree(output_temp_folder)
 
@@ -406,23 +463,36 @@ def e_val_calc_batch(subfamily):
             #
             for result in results:
                     df_list.append(result)
-            #for i, df in enumerate(df_list):
-            #    print(f"DataFrame {i}:: internal_id {id_sublist[i]}: Shape = {df.shape}")
-            #for te_id in internal_id_list:
-            #    result=e_val_calc(te_id)
-            #    df_list.append(result)
             output_table=pd.concat(df_list)
-            output_table.to_csv(output_file, sep='\t', index=False)
-            logging.info('done, saving the table at: '+output_file)
+            output_table.to_csv(output_filepath, sep='\t', index=False)
+            logging.info('done, saving the table at: '+output_filepath)
         logging.debug("--- %s seconds ---\n" % (time.time() - start_time))
     else:
         logging.info(subfamily+' already done')
 #%%
 def main():
-    #for subfam in ['MER11C']:
-    for subfam in config.subfamily_list:
-        e_val_calc_batch(subfam)
+    #initialize 
+    global repeatmasker_table, divergence_table,target_species, maf_dir, maf_file_prefix
+    repeatmasker_table = utility.repeatmasker_prep(repeatmasker_filepath)
+    divergence_table=utility.divergence_table_prep(divergence_table_filepath)
+    #for subfam in ['THE1C']:
+    for subfam in subfamily_list:
+        e_val_calc_batch(subfam, internal_id_dir, e_table_dir)
 #%%
 if __name__ == '__main__':
     main()
-#%%
+#%% DEBUG
+#subfamily = 'THE1C'
+#subfamily_filename = subfamily.replace('/','_') 
+#input_folder = config.internal_id_folder
+#nput_filepath = f'{input_folder}/{subfamily_filename}.txt'
+#internal_id_tbl = pd.read_csv(input_filepath, sep='\t')
+#internal_id_list = internal_id_tbl.internal_id.unique()
+#%% DEBUG
+#results = []
+#for internal_id in ['THE1C_COMPLETE_3080']:
+#for internal_id in internal_id_list:
+#    print(internal_id)
+#    results.append(e_val_calc(internal_id))
+#%% DEBUG
+#output_table=pd.concat(results)

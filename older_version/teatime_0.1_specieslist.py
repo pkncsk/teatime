@@ -2,23 +2,21 @@
 import numpy as np
 import pandas as pd
 from Bio.AlignIO import MafIO
-from concurrent.futures import ProcessPoolExecutor
-import sys
-sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age')
-import config_early_test as config
-sys.path.append('/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/')
-from ma_mapper import extract_maf
+from ma_mapper import extract_maf, utility
 MafIO.MafIndex.get_spliced = extract_maf.get_spliced_mod
-#import config_mm39_dfam as config
-#sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/varyzer/stable')
-#import config
-#import config_baseline as config
-#%% 
-#%%
+#%% INPUT PARAMETERS
+repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
+divergence_table_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/zoonomia_divergence_ref_table/species241_info.tsv'
 subfamily = 'THE1C'
-filtered_table=config.filtered_table
-subfam_table=filtered_table[filtered_table['repName']==subfamily]
-# %%
+target_species = 'Homo_sapiens'
+output_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/output/list_of_e_value_tables_for_figures'
+maf_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/multi_species_multiple_alignment_maf/zoonomia_241_species'
+maf_file_prefix = '241-mammalian-2020v2b.maf'
+#%% INITIATION
+repeatmasker_table=utility.repeatmasker_prep(repeatmasker_filepath)
+species_table =utility.divergence_table_prep(divergence_table_filepath)
+subfam_table=repeatmasker_table[repeatmasker_table['repName']==subfamily]
+# %% 
 species_table_list = []
 splice_maf_age_list = []
 i = 0
@@ -33,11 +31,9 @@ for idx, row in subfam_table.iterrows():
         strand = -1
     else:
         strand = 1
-    target_species = config.target_species
-    species_table = config.species_table
-    if target_species == 'Homo_sapiens':
-        mafpath = f'/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/241genomes/241-mammalian-2020v2b.maf.{chrom}'
-
+    
+    mafpath = f'{maf_dir}/{maf_file_prefix}.{chrom}'
+    
     target_chrom = f'{target_species}.{chrom}'
     index_maf = MafIO.MafIndex(f'{mafpath}.mafindex', mafpath, target_chrom)
     spliced_maf_full =index_maf.get_spliced([start],[end],strand)
@@ -46,15 +42,19 @@ for idx, row in subfam_table.iterrows():
     splice_maf_age_list.append(spliced_maf_age)
     species_table = spliced_maf_age[['meta_name', 'Estimated Time (MYA)']]
     species_table_list.append(species_table)
-#%%
+#%% SAVE E-VALUE TABLE LIST
 import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_raw_v0.1.lzma'
+output_filepath = f'{output_dir}/{subfamily}_0.1.lzma'
+compress_pickle.dump(splice_maf_age_list, output_filepath, compression="lzma")
+#%% SAVE E-VALUE TABLE w/ REQUIRED COLUMNS LIST
+import compress_pickle
+output_filepath = f'{output_dir}/{subfamily}_raw_0.1.lzma'
 compress_pickle.dump(species_table_list, output_filepath, compression="lzma")
-#%%
+#%% LOAD E-VALUE TABLE w/ REQUIRED COLUMNS LIST
 import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_raw_v0.1.lzma'
+output_filepath = f'{output_dir}/{subfamily}_raw_0.1.lzma'
 species_table_list=compress_pickle.load(output_filepath, compression="lzma")
-# %%
+# %% MAKE TEATIME TABLE
 te_name_list = []
 te_age_list = []
 for idx, species_table in enumerate(species_table_list):
@@ -68,8 +68,9 @@ te_age_df=pd.DataFrame({
     'te_name': te_name_list,
     'te_age': te_age_list
 })
-# %%
-age_ref_table = pd.DataFrame(data=config.age_ref_table_template)
+#%% PLOT TEATIME DISTRIBUTION 
+age_ref_table_template=utility.age_reference_table()
+age_ref_table = pd.DataFrame(data=age_ref_table_template)
 age_set=te_age_df['te_age'].sort_values().unique()
 
 import matplotlib.pyplot as plt
@@ -85,8 +86,11 @@ bar_container = bar_axes.bar(age_ref_table[age_ref_table['age'].isin(age_set)]['
 bar_axes.set_title(f'Distribution of TE age in {subfamily}')
 bar_axes.set_ylabel('counts')
 bar_axes.bar_label(bar_container, fmt='{:,.0f}', fontsize=6)
-#%%
-#%%
+#%% LOAD E-VALUE TABLE LIST
+import compress_pickle
+output_filepath = f'{output_dir}/{subfamily}_0.1.lzma'
+splice_maf_age_list=compress_pickle.load(output_filepath, compression="lzma")
+#%% COUNT GAP
 seqid_list = []
 seq_list = []
 perc_gap_list = []
@@ -110,21 +114,8 @@ for sub_df in splice_maf_age_list:
     perc_gap_count=perc_binned_count['seqid'].values
     perc_gap_count_list.append(perc_gap_count)
 #%%
-import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_v0.1.lzma'
-compress_pickle.dump(splice_maf_age_list, output_filepath, compression="lzma")
-#%%
-import compress_pickle
-output_filepath = f'/rds/project/rds-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age/{subfamily}_v0.1.lzma'
-splice_maf_age_list=compress_pickle.load(output_filepath, compression="lzma")
-#%%
 perc_gap_freq_array = np.array([arr / np.sum(arr) for arr in perc_gap_count_list])
-#%%
-seq_tbl=pd.DataFrame({
-    'species': seqid_list,
-    'alignment': seq_list
-})
-# %%
+#%% PLOT GAP PERCENTAGE 
 import matplotlib.pyplot as plt
 plt.rcParams['savefig.dpi'] = 600
 plt.rcParams['figure.dpi'] = 600
@@ -136,4 +127,8 @@ box_axes.boxplot(perc_gap_freq_array, 1,'', labels=labels)
 box_axes.set_ylabel('ratio')
 box_axes.set_xlabel('gap percentage')
 box_axes.set_title(f'THE1C gap percentage of alignment in MSA')
-# %%
+#%% DEBUG
+seq_tbl=pd.DataFrame({
+    'species': seqid_list,
+    'alignment': seq_list
+})

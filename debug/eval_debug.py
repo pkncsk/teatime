@@ -2,22 +2,19 @@
 import numpy as np
 import pandas as pd
 from Bio.AlignIO import MafIO
-from concurrent.futures import ProcessPoolExecutor
-import sys
-sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age')
-import config_hg38 as config
-#import config_mm39_dfam as config
-#sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/varyzer/stable')
-#import config
-#import config_baseline as config
 import os
-import time
 from datetime import datetime
-import shutil
-import glob
-import logging
 import math
-import itertools
+from ma_mapper import utility, extract_maf
+#%% INPUT PARAMETERS
+target_species = 'Homo_sapiens'
+divergence_table_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/zoonomia_divergence_ref_table/species241_info.tsv'
+subfamily = 'MER11A'
+repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
+maf_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/multi_species_multiple_alignment_maf/zoonomia_241_species'
+maf_file_prefix = '241-mammalian-2020v2b.maf'
+internal_id_dir = None
+e_table_dir = None
 #%% math function for blast score calculation
 def affine_count_simple(str1,str2,
     matchWeight = 1,
@@ -149,19 +146,18 @@ def BLAST_StoP(alignment_score, m,n ,lambda_ ,K, H, alpha, beta, gapped):
     #p_value = -BLAST_Expm2(-E)
     #p_value = 1 - math.exp(-E)
     return p_value, E
-#%%
+#%% INITIATION
 subfamily='MER11A'
-input_folder = config.internal_id_folder
-output_folder = config.e_value_folder
-if os.path.isdir(output_folder) == False:
-    os.mkdir(output_folder)
 subfamily_filename = subfamily.replace('/','_') 
-input_filepath = f'{input_folder}/{subfamily_filename}.txt'
-global internal_id_tbl
+if internal_id_dir is None:
+        internal_id_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+input_filepath = f'{internal_id_dir}/{subfamily_filename}.internal_id.txt'
 internal_id_tbl = pd.read_csv(input_filepath, sep='\t')
-output_filepath = f'{output_folder}/{subfamily_filename}.txt'
-operation_log_path = f'{output_folder}/op_log.log'
-#setup logger
+if e_table_dir is None:
+        e_table_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+output_filepath = f'{e_table_dir}/{subfamily_filename}.e_table.txt'
+repeatmasker_table = utility.repeatmasker_prep(repeatmasker_filepath)
+divergence_table=utility.divergence_table_prep(divergence_table_filepath)
 #%%
 #meta_id = 'MER11A_72'
 #internal_id_tbl['meta_id'] = subfamily + '_' + internal_id_tbl.index.astype(str)
@@ -170,7 +166,7 @@ operation_log_path = f'{output_folder}/op_log.log'
 internal_id = 'MER11A_SINGLE_4'
 internal_id_tbl_subset = internal_id_tbl[internal_id_tbl.internal_id == internal_id]
 subset_index=internal_id_tbl_subset.rmsk_index.to_list()
-rmsk_subset=config.filtered_table[config.filtered_table.index.isin(subset_index)]
+rmsk_subset=repeatmasker_table[repeatmasker_table.index.isin(subset_index)]
 chrom=rmsk_subset.genoName.unique()[0]
 strand=rmsk_subset.strand.unique()[0]
 if strand =='-':
@@ -188,9 +184,6 @@ start_flanked=[min(start_list)-5000] + start_list + [max(end_list)]
 end_flanked = [min(start_list)] + end_list + [max(end_list)+5000]
 #%%
 #%%
-import sys
-sys.path.append('/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/')
-from ma_mapper import extract_maf
 MafIO.MafIndex.get_spliced = extract_maf.get_spliced_mod
 #%%    
 #full_length = [min(genostart_list)-5000,max(genoend_list)+5000]
@@ -198,13 +191,11 @@ if strand=='-':
     strand = -1
 else:
     strand = 1
-target_species = config.target_species
-species_table = config.species_table
-if target_species == 'Homo_sapiens':
-    mafpath = f'/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/241genomes/241-mammalian-2020v2b.maf.{chrom}'
+
+maf_filepath = f'{maf_dir}/{maf_file_prefix}.{chrom}'
 
 target_chrom = f'{target_species}.{chrom}'
-index_maf = MafIO.MafIndex(f'{mafpath}.mafindex', mafpath, target_chrom)
+index_maf = MafIO.MafIndex(f'{maf_filepath}.mafindex', maf_filepath, target_chrom)
 spliced_maf_full =index_maf.get_spliced(start_flanked,end_flanked,strand)
 #%%
 target_seq = np.char.upper(spliced_maf_full[spliced_maf_full.seqid.str.contains('Homo_sapiens')]['seq'].to_list())[0]
@@ -268,7 +259,7 @@ target_seq = np.char.upper(spliced_maf_full[spliced_maf_full.seqid.str.contains(
 spliced_maf_full[['alignment_score', 'matched', 'gapped', 'gap_count']] = spliced_maf_full.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][5000:-5000]), target_seq[5000:-5000]), axis=1)
 #spliced_maf_full['meta_name'] =spliced_maf_full['seqid'].str.split('.').str[0]
 spliced_maf_full[['meta_name', 'chr_code']] = spliced_maf_full['seqid'].str.split('.', n=1, expand=True)
-spliced_maf_age=spliced_maf_full.merge(species_table[['meta_name','ungapped_length','Estimated Time (MYA)']], how='left',on='meta_name')
+spliced_maf_age=spliced_maf_full.merge(divergence_table[['meta_name','ungapped_length','Estimated Time (MYA)']], how='left',on='meta_name')
 spliced_maf_age['seq_length'] = spliced_maf_full['seq'].apply(len) - 10000
 lambda_ = 1.08;K = 0.28;H = 0.54;alpha = 2.0;beta = -2
 

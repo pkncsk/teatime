@@ -1,21 +1,25 @@
 #%%
-from unittest import result
 import pandas as pd
 from Bio.AlignIO import MafIO
 import numpy as np
-import sys
 import os
 import re
-import os
 import math
 import itertools
-sys.path.append('/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/test/te_age')
-import itertools
 from concurrent.futures import ProcessPoolExecutor
-import dev.ma_mapper.script.config_main as config
-sys.path.append('/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/phd_project_development/dev/packaging_dir/ma_mapper/')
-from ma_mapper import extract_maf
+from ma_mapper import extract_maf, utility
 MafIO.MafIndex.get_spliced = extract_maf.get_spliced_mod
+#%% INPUT PARAMETERS
+subfamily_list = ['MER11A']
+repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
+target_species = 'Homo_sapiens'
+divergence_table_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/zoonomia_divergence_ref_table/species241_info.tsv'
+maf_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/multi_species_multiple_alignment_maf/zoonomia_241_species'
+maf_file_prefix = '241-mammalian-2020v2b.maf'
+
+internal_id_dir = None
+e_table_dir = None
+age_table_dir = None
 #%%
 def affine_count_simple(str1,str2,
     matchWeight = 1,
@@ -233,6 +237,7 @@ def string_to_float_list(val):
     if isinstance(val, list):
         return [float(i) if i != 'inf' else float('inf') for i in val]
     return []
+
 #%%
 def string_to_list(s):
     try:
@@ -241,37 +246,36 @@ def string_to_list(s):
         print(f"Warning: Could not parse {s}")
         return None
 
-def filter_e2(e_table,subfamily,e_cutoff = 1e-3, test_width = 5000):
+def filter_e2(e_table,
+              subfamily,
+              internal_id_dir,
+              e_cutoff = 1e-3, 
+              test_width = 5000):
     te_age = 0
     segmental = pd.DataFrame()
     unclassified = pd.DataFrame()
     nosig_match = pd.DataFrame()
     internal_id = e_table.internal_id.unique()[0]
-    #print(internal_id)
     if e_table.shape[0] > 1:
     #test second pass
         e_table=e_table[e_table.E_value.astype('float64')<=e_cutoff].copy()
-                #Convert the strings in 'E_val_flanks' to lists
+        #Convert the strings in 'E_val_flanks' to lists
         e_table['E_val_flanks'] = e_table.E_val_flanks.apply(lambda x: string_to_float_list(eval(x)) if isinstance(x, str) else x)
 
-        second_pass_tbl=e_table[e_table['E_val_flanks'].apply(lambda x: all(i <= e_cutoff for i in x))]
+        second_pass_tbl=e_table[e_table['E_val_flanks'].apply(lambda x: any(i <= e_cutoff for i in x))]
         if second_pass_tbl.shape[0] > 1:
             te_age=second_pass_tbl.divergence.max()
         else:
-            filtered_table=config.filtered_table
             subfamily_filename = subfamily.replace('/','_') 
-            input_folder = config.internal_id_folder
-            input_filepath = f'{input_folder}/{subfamily_filename}.txt'
+            if internal_id_dir is None:
+                internal_id_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+
+            input_filepath = f'{internal_id_dir}/{subfamily_filename}.internal_id.txt'
             internal_id_tbl = pd.read_csv(input_filepath, sep='\t')
-            #print(internal_id_tbl)
             internal_id=second_pass_tbl['internal_id'].unique()[0]
-            #print(internal_id)
             internal_id_tbl_subset = internal_id_tbl[internal_id_tbl.internal_id == internal_id]
-            #print(internal_id_tbl_subset)
             subset_index=internal_id_tbl_subset.rmsk_index.to_list()
-            #print(subset_index)
-            rmsk_subset=filtered_table[filtered_table.index.isin(subset_index)]
-            #print(rmsk_subset)
+            rmsk_subset=repeatmasker_table[repeatmasker_table.index.isin(subset_index)]
             chrom=rmsk_subset.genoName.unique()[0]
             strand=rmsk_subset.strand.unique()[0]
             if strand =='-':
@@ -282,13 +286,10 @@ def filter_e2(e_table,subfamily,e_cutoff = 1e-3, test_width = 5000):
                 strand = -1
             else:
                 strand = 1
-            target_species = config.target_species
-            species_table = config.species_table
-            if target_species == 'Homo_sapiens':
-                mafpath = f'/home/pc575/rds/rds-mi339-kzfps/users/pakkanan/241genomes/241-mammalian-2020v2b.maf.{chrom}'
+            maf_filepath = f'{maf_dir}/{maf_file_prefix}.{chrom}'
 
             target_chrom = f'{target_species}.{chrom}'
-            index_maf = MafIO.MafIndex(f'{mafpath}.mafindex', mafpath, target_chrom)
+            index_maf = MafIO.MafIndex(f'{maf_filepath}.mafindex', maf_filepath, target_chrom)
             start_flanked=[min(start_list)-test_width] + start_list + [max(end_list)]
             end_flanked = [min(start_list)] + end_list + [max(end_list)+test_width]
             spliced_maf_full =index_maf.get_spliced(start_flanked,end_flanked,strand)
@@ -297,10 +298,8 @@ def filter_e2(e_table,subfamily,e_cutoff = 1e-3, test_width = 5000):
         
             # Apply the optimized function to the DataFrame
             spliced_maf_full[['alignment_score', 'matched', 'gapped', 'gap_count']] = spliced_maf_full.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][test_width:-test_width]), target_seq[test_width:-test_width]), axis=1)
-            #spliced_maf_full['meta_name'] =spliced_maf_full['seqid'].str.split('.').str[0]
             spliced_maf_full[['meta_name', 'chr_code']] = spliced_maf_full['seqid'].str.split('.', n=1, expand=True)
-            spliced_maf_age=spliced_maf_full.merge(species_table[['meta_name','ungapped_length','Estimated Time (MYA)']], how='left',on='meta_name')
-            #splice_maf_age_list.append(spliced_maf_age)
+            spliced_maf_age=spliced_maf_full.merge(divergence_table[['meta_name','ungapped_length','Estimated Time (MYA)']], how='left',on='meta_name')
             spliced_maf_age['seq_length'] = spliced_maf_full['seq'].apply(len) -2*test_width
             lambda_ = 1.08;K = 0.28;H = 0.54;alpha = 2.0;beta = -2
             spliced_maf_age[['p_value', 'E_value']] = spliced_maf_age.apply(lambda row: pd.Series(BLAST_StoP(
@@ -411,23 +410,29 @@ def filter_e2(e_table,subfamily,e_cutoff = 1e-3, test_width = 5000):
             te_age = 0
     return internal_id, te_age, segmental, unclassified, nosig_match
 
-def filter_e_for_age(subfamily, e_cutoff = 1e-3):
-    e_table = pd.read_csv(f'{config.e_value_folder}/{subfamily}.txt',sep = '\t', low_memory=False)
-    output_filepath = f'{config.te_age_folder}/{subfamily}.txt'
+def filter_e_for_age(subfamily, 
+                     e_table_dir,
+                     age_table_dir,
+                     e_cutoff = 1e-3):
+    if e_table_dir is None:
+        e_table_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+    e_table = pd.read_csv(f'{e_table_dir}/{subfamily}.e_table.txt',sep = '\t', low_memory=False)
+    if age_table_dir is None:
+        age_table_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+    output_filepath = f'{age_table_dir}/{subfamily}.teatime.txt'
     if (os.path.isfile(output_filepath) == False):
         print('start',subfamily)
         grouped =e_table.groupby('internal_id', sort=False)
-
-# Create a list to store the smaller DataFrames
+        # Create a list to store the smaller DataFrames
         e_val_table_by_id = [group for _, group in grouped]
        
-        
+        global interal_id_dir
         with ProcessPoolExecutor(max_workers=90) as executor:
-            results = executor.map(filter_e2, e_val_table_by_id,itertools.repeat(subfamily) ,itertools.repeat(e_cutoff))           
-        #results = []     #print(idx, te_age)
-        #for e_value_table_by_id in e_val_table_by_id:
-        #    result = filter_e2(e_value_table_by_id, subfamily)
-        #    results.append(result)
+            results = executor.map(filter_e2, 
+                                   e_val_table_by_id,
+                                   itertools.repeat(subfamily), 
+                                   itertools.repeat(internal_id_dir) ,
+                                   itertools.repeat(e_cutoff))           
 
         id_list = []
         age_list = []
@@ -445,18 +450,19 @@ def filter_e_for_age(subfamily, e_cutoff = 1e-3):
         output_table=pd.DataFrame(dict_prep)
         output_table.to_csv(output_filepath, sep='\t', index=False)
 
-        if nosig_match:
-            nosig_match_df=pd.concat(nosig_match)
-            nosig_filepath=f'{config.te_age_human_insertion_folder}/{subfamily}.txt'
+        nosig_match_df=pd.concat(nosig_match)
+        if nosig_match_df.shape[0] > 0:
+            nosig_filepath=f'{age_table_dir}/{subfamily}.insertion.txt'
             nosig_match_df.to_csv(nosig_filepath, sep='\t', index=False)
-        if segmental:
-            segmental_df=pd.concat(segmental)
-            segmental_filepath=f'{config.te_age_segmental_folder}/{subfamily}.txt'
+    
+        segmental_df=pd.concat(segmental)
+        if segmental_df.shape[0] > 0:
+            segmental_filepath=f'{age_table_dir}/{subfamily}.segmental.txt'
             segmental_df.to_csv(segmental_filepath, sep='\t', index=False)
-        
-        if unclassified:
-            unclassified_df=pd.concat(unclassified)
-            unclassified_filepath=f'{config.te_age_unclassified}/{subfamily}.txt'
+    
+        unclassified_df=pd.concat(unclassified)
+        if unclassified_df.shape[0] > 0:
+            unclassified_filepath=f'{age_table_dir}/{subfamily}.unclassified.txt'
             unclassified_df.to_csv(unclassified_filepath, sep='\t', index=False)
         
         print('done',subfamily)
@@ -464,9 +470,12 @@ def filter_e_for_age(subfamily, e_cutoff = 1e-3):
         print('already done', subfamily)
 # %%
 def main():
+    global repeatmasker_table, divergence_table, maf_dir, maf_file_prefix
+    repeatmasker_table = utility.repeatmasker_prep(repeatmasker_filepath)
+    divergence_table=utility.divergence_table_prep(divergence_table_filepath)
     #for subfamily in ['THE1C']:
-    for subfamily in config.subfamily_list:
-        filter_e_for_age(subfamily)
+    for subfamily in subfamily_list:
+        filter_e_for_age(subfamily,e_table_dir,age_table_dir)
 # %%
 if __name__ == '__main__':
     main()
