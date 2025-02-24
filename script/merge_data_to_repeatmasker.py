@@ -5,8 +5,8 @@ import sys
 from ma_mapper import utility
 #%% INPUT PARAMETERS
 repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
-combined_table_dir = None
-output_dir = None
+combined_table_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/output/teatime/combined_age_div_lenient/'
+output_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/output/updated_repeatmasker_table_for_diana_and_michael/'
 #%% INITIATION
 repeatmasker_table=utility.repeatmasker_prep(repeatmasker_filepath)
 repeatmasker_table['rmsk_index'] = repeatmasker_table.index
