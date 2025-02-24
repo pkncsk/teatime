@@ -8,7 +8,7 @@ def find_nearest(array, value):
     return array[idx]
 #%% INPUT PARAMETERS
 repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
-combined_table_dir = None
+combined_table_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/output/teatime/combined_age_div_lenient'
 #%% INITIATION
 age_canon = utility.age_canon()
 age_ref_table_template = utility.age_reference_table()
