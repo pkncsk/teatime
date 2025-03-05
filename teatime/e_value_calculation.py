@@ -4,7 +4,7 @@ import pandas as pd
 from Bio.AlignIO import MafIO
 from concurrent.futures import ProcessPoolExecutor
 from ma_mapper import extract_maf, utility, mafio_patch
-#MafIO.MafIndex.get_spliced = extract_maf.get_spliced_mod
+MafIO.MafIndex.get_spliced = extract_maf.get_spliced_mod
 import os
 import time
 from datetime import datetime
@@ -241,13 +241,17 @@ def e_val_engine_full(chrom,
                       end_list, 
                       maf_filepath,
                       e_cutoff=1e-3, 
-                      target_species = 'Homo_sapiens'):
+                      target_species = 'Homo_sapiens',
+                      intermidiate_output=None):
     
     target_chrom = f'{target_species}.{chrom}'
     mafindex_filedir = '.'.join(str.split(maf_filepath, sep ='.')[:-1])
     mafindex_filepath = f'{mafindex_filedir}.mafindex'
     #print(mafindex_filepath)
-    index_maf = mafio_patch.gzMafIndex(mafindex_filepath, maf_filepath, target_chrom)
+    if '.gz' in mafindex_filepath:
+        index_maf = mafio_patch.gzMafIndex(mafindex_filepath, maf_filepath, target_chrom)
+    else:
+        index_maf = MafIO.MafIndex(mafindex_filepath, maf_filepath, target_chrom)
     spliced_maf_full =index_maf.get_spliced(start_list,end_list,strand)
 
     target_seq = np.char.upper(spliced_maf_full[spliced_maf_full.seqid.str.contains(target_species)]['seq'].to_list())[0]
@@ -270,43 +274,15 @@ def e_val_engine_full(chrom,
         beta=beta,
         gapped=row['gapped']
     )), axis=1)
-    first_pass = spliced_maf_age[spliced_maf_age['E_value']<=e_cutoff].copy()
-    if first_pass.shape[0] < 1:
-        return pd.DataFrame()
+    if intermidiate_output=='nofilter':
+        return spliced_maf_age
     else:
-        first_pass[['alignment_score_front', 'matched_front', 'gapped_front', 'gap_count_front']] = first_pass.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][:5000]), target_seq[:5000]), axis=1)
-        first_pass[['p_value_front', 'E_value_front']] = first_pass.apply(lambda row: pd.Series(BLAST_StoP(
-            alignment_score=row['alignment_score_front'],
-            m=5000,
-            n=row['ungapped_length'],
-            lambda_=lambda_,
-            K=K,
-            H=H,
-            alpha=alpha,
-            beta=beta,
-            gapped=row['gapped_front']
-        )), axis=1)
-        
-        first_pass[['alignment_score_back', 'matched_back', 'gapped_back', 'gap_count_back']] = first_pass.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][-5000:]), target_seq[-5000:]), axis=1)
-        first_pass[['p_value_back', 'E_value_back']] = first_pass.apply(lambda row: pd.Series(BLAST_StoP(
-            alignment_score=row['alignment_score_back'],
-            m=5000,
-            n=row['ungapped_length'],
-            lambda_=lambda_,
-            K=K,
-            H=H,
-            alpha=alpha,
-            beta=beta,
-            gapped=row['gapped_back']
-        )), axis=1)
-        second_pass=first_pass[(first_pass['E_value_front']<=e_cutoff)|(first_pass['E_value_back']<=e_cutoff)].copy()
-        e_table = second_pass.apply(calculate_metrics, axis=1).sort_values('divergence',ascending =True)
-        if second_pass.shape[0] >1:
-            return e_table
+        first_pass = spliced_maf_age[spliced_maf_age['E_value']<=e_cutoff].copy()
+        if first_pass.shape[0] < 1:
+            return pd.DataFrame()
         else:
-            flanked_tbl = spliced_maf_age.copy()
-            flanked_tbl[['alignment_score_front', 'matched_front', 'gapped_front', 'gap_count_front']] = flanked_tbl.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][:5000]), target_seq[:5000]), axis=1)
-            flanked_tbl[['p_value_front', 'E_value_front']] = flanked_tbl.apply(lambda row: pd.Series(BLAST_StoP(
+            first_pass[['alignment_score_front', 'matched_front', 'gapped_front', 'gap_count_front']] = first_pass.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][:5000]), target_seq[:5000]), axis=1)
+            first_pass[['p_value_front', 'E_value_front']] = first_pass.apply(lambda row: pd.Series(BLAST_StoP(
                 alignment_score=row['alignment_score_front'],
                 m=5000,
                 n=row['ungapped_length'],
@@ -317,8 +293,9 @@ def e_val_engine_full(chrom,
                 beta=beta,
                 gapped=row['gapped_front']
             )), axis=1)
-            flanked_tbl[['alignment_score_back', 'matched_back', 'gapped_back', 'gap_count_back']] = flanked_tbl.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][-5000:]), target_seq[-5000:]), axis=1)
-            flanked_tbl[['p_value_back', 'E_value_back']] = flanked_tbl.apply(lambda row: pd.Series(BLAST_StoP(
+            
+            first_pass[['alignment_score_back', 'matched_back', 'gapped_back', 'gap_count_back']] = first_pass.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][-5000:]), target_seq[-5000:]), axis=1)
+            first_pass[['p_value_back', 'E_value_back']] = first_pass.apply(lambda row: pd.Series(BLAST_StoP(
                 alignment_score=row['alignment_score_back'],
                 m=5000,
                 n=row['ungapped_length'],
@@ -329,32 +306,65 @@ def e_val_engine_full(chrom,
                 beta=beta,
                 gapped=row['gapped_back']
             )), axis=1)
-            # Add columns to determine match types
-            flanked_tbl['match_front'] = flanked_tbl['E_value_front'] <= e_cutoff
-            flanked_tbl['match_back'] = flanked_tbl['E_value_back'] <= e_cutoff
+            if intermidiate_output=='firstpass':
+                return first_pass   
+            else:
+                second_pass=first_pass[(first_pass['E_value_front']<=e_cutoff)|(first_pass['E_value_back']<=e_cutoff)].copy()
+                e_table = second_pass.apply(calculate_metrics, axis=1).sort_values('divergence',ascending =True)
+                if second_pass.shape[0] >1:
+                    return e_table
+                else:
+                    flanked_tbl = spliced_maf_age.copy()
+                    flanked_tbl[['alignment_score_front', 'matched_front', 'gapped_front', 'gap_count_front']] = flanked_tbl.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][:5000]), target_seq[:5000]), axis=1)
+                    flanked_tbl[['p_value_front', 'E_value_front']] = flanked_tbl.apply(lambda row: pd.Series(BLAST_StoP(
+                        alignment_score=row['alignment_score_front'],
+                        m=5000,
+                        n=row['ungapped_length'],
+                        lambda_=lambda_,
+                        K=K,
+                        H=H,
+                        alpha=alpha,
+                        beta=beta,
+                        gapped=row['gapped_front']
+                    )), axis=1)
+                    flanked_tbl[['alignment_score_back', 'matched_back', 'gapped_back', 'gap_count_back']] = flanked_tbl.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][-5000:]), target_seq[-5000:]), axis=1)
+                    flanked_tbl[['p_value_back', 'E_value_back']] = flanked_tbl.apply(lambda row: pd.Series(BLAST_StoP(
+                        alignment_score=row['alignment_score_back'],
+                        m=5000,
+                        n=row['ungapped_length'],
+                        lambda_=lambda_,
+                        K=K,
+                        H=H,
+                        alpha=alpha,
+                        beta=beta,
+                        gapped=row['gapped_back']
+                    )), axis=1)
+                    # Add columns to determine match types
+                    flanked_tbl['match_front'] = flanked_tbl['E_value_front'] <= e_cutoff
+                    flanked_tbl['match_back'] = flanked_tbl['E_value_back'] <= e_cutoff
 
-            # Create additional columns for summary
-            flanked_tbl['front_only'] = flanked_tbl['match_front'] & ~flanked_tbl['match_back']
-            flanked_tbl['back_only'] = ~flanked_tbl['match_front'] & flanked_tbl['match_back']
-            flanked_tbl['both'] = flanked_tbl['match_front'] & flanked_tbl['match_back']
-            flanked_tbl['nonmatch'] = ~flanked_tbl['match_front'] & ~flanked_tbl['match_back']
+                    # Create additional columns for summary
+                    flanked_tbl['front_only'] = flanked_tbl['match_front'] & ~flanked_tbl['match_back']
+                    flanked_tbl['back_only'] = ~flanked_tbl['match_front'] & flanked_tbl['match_back']
+                    flanked_tbl['both'] = flanked_tbl['match_front'] & flanked_tbl['match_back']
+                    flanked_tbl['nonmatch'] = ~flanked_tbl['match_front'] & ~flanked_tbl['match_back']
 
-            # Summarize the counts
-            summary = {
-                'total_count': len(flanked_tbl),
-                'match_count': flanked_tbl['match_front'].sum() + flanked_tbl['match_back'].sum() -  flanked_tbl['both'].sum(),
-                'front_only_count': flanked_tbl['front_only'].sum(),
-                'back_only_count': flanked_tbl['back_only'].sum(),
-                'both_count': flanked_tbl['both'].sum(),
-                'nonmatch_count': flanked_tbl['nonmatch'].sum()
-            }
+                    # Summarize the counts
+                    summary = {
+                        'total_count': len(flanked_tbl),
+                        'match_count': flanked_tbl['match_front'].sum() + flanked_tbl['match_back'].sum() -  flanked_tbl['both'].sum(),
+                        'front_only_count': flanked_tbl['front_only'].sum(),
+                        'back_only_count': flanked_tbl['back_only'].sum(),
+                        'both_count': flanked_tbl['both'].sum(),
+                        'nonmatch_count': flanked_tbl['nonmatch'].sum()
+                    }
 
-            e_table = e_table[['chr_code','divergence','%iden','%gap','BLAST','E_value','%iden_flanks']]
-            e_table['match_total'] = [[summary['match_count'],summary['total_count']]]
-            e_table['front_back'] = [[summary['front_only_count'],summary['back_only_count']]]
-            e_table['both_non'] = [[summary['both_count'],summary['nonmatch_count']]]
-            e_table.columns = ['species','chr_code','divergence','%iden','%gap','BLAST','E_value','%iden_flanks','%gap_flanks','E_val_flanks']
-            return e_table
+                    e_table = e_table[['chr_code','divergence','%iden','%gap','BLAST','E_value','%iden_flanks']]
+                    e_table['match_total'] = [[summary['match_count'],summary['total_count']]]
+                    e_table['front_back'] = [[summary['front_only_count'],summary['back_only_count']]]
+                    e_table['both_non'] = [[summary['both_count'],summary['nonmatch_count']]]
+                    e_table.columns = ['species','chr_code','divergence','%iden','%gap','BLAST','E_value','%iden_flanks','%gap_flanks','E_val_flanks']
+                    return e_table
 
 #%%
 def e_val_calc(internal_id, target_species = 'Homo_sapiens'):
