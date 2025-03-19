@@ -17,10 +17,9 @@ target_species = 'Homo_sapiens'
 divergence_table_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/zoonomia_divergence_ref_table/species241_info.tsv'
 subfamily_list = ['MER11A']
 repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
-maf_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/multi_species_multiple_alignment_maf/zoonomia_241_species'
-maf_file_prefix = '241-mammalian-2020v2b.maf'
-internal_id_dir = None
-e_table_dir = None
+maf_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/multi_species_multiple_alignment_maf/cactus447/'
+internal_id_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/output/teatime/internal_id/'
+e_table_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/output/teatime447/e_value/'
 #%% math function for blast score calculation
 def affine_count_simple(str1,str2,
     matchWeight = 1,
@@ -365,7 +364,22 @@ def e_val_engine_full(chrom,
                     e_table['both_non'] = [[summary['both_count'],summary['nonmatch_count']]]
                     e_table.columns = ['species','chr_code','divergence','%iden','%gap','BLAST','E_value','%iden_flanks','%gap_flanks','E_val_flanks']
                     return e_table
+#%%
+def get_maf_filepath(maf_dir, chrom):
+    files = os.listdir(maf_dir)
+    maf_filename = f"{chrom}.maf" 
+    maf_files = [f for f in files if f.endswith(maf_filename)]
 
+    # Determine the appropriate file to use
+    maf_filepath = None
+    if any(f.endswith('.maf') for f in maf_files):
+        maf_filepath = f"{maf_dir}/{maf_filename}" #.maf is more optimal performance wise 
+    elif any(f.endswith('.maf.gz') for f in maf_files):
+        maf_filepath = f"{maf_dir}/{maf_filename}.gz" 
+    else:
+        raise FileNotFoundError(f"No .maf or .maf.gz file found for chromosome {chrom} in {maf_dir}")
+
+    return maf_filepath
 #%%
 def e_val_calc(internal_id, target_species = 'Homo_sapiens'):
     internal_id_tbl_subset = internal_id_tbl[internal_id_tbl.internal_id == internal_id]
@@ -384,7 +398,7 @@ def e_val_calc(internal_id, target_species = 'Homo_sapiens'):
     start_flanked=[min(start_list)-5000] + start_list + [max(end_list)]
     end_flanked = [min(start_list)] + end_list + [max(end_list)+5000]
     try:
-        maf_filepath = f'{maf_dir}/{maf_file_prefix}.{chrom}.gz'
+        maf_filepath = get_maf_filepath(maf_dir, chrom)
         E_table=e_val_engine_full(chrom, strand, start_flanked, end_flanked,maf_filepath, e_cutoff=1e-3, target_species=target_species)
         
     except UnboundLocalError:
@@ -405,6 +419,8 @@ def e_val_calc_batch(subfamily,
     internal_id_tbl = pd.read_csv(input_filepath, sep='\t')
     if e_table_dir is None:
         e_table_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
+    if not os.path.exists(e_table_dir):
+        os.makedirs(e_table_dir)
     output_filepath = f'{e_table_dir}/{subfamily_filename}.e_table.txt'
     operation_log_path = f'{e_table_dir}/op_log.log'
     #setup logger

@@ -1,0 +1,448 @@
+track name,common,clade,scientific name,taxon id,Accession,median_time,ci_min,ci_max
+hg38,human,primates catarrhini,Homo sapiens,9606.0,hg38,,,
+Gorilla_gorilla,western gorilla,primates catarrhini,Gorilla gorilla,9593.0,GCA_900006655.3_Susie3,8.6,8.3,9.3
+Pongo_abelii,Sumatran orangutan,primates catarrhini,Pongo abelii,9601.0,GCA_002880775.3_Susie_PABv2,15.2,14.5,16.3
+Gorilla_beringei,Eastern Gorilla,primates catarrhini,Gorilla beringei,499232.0,,8.6,8.3,9.3
+Pan_troglodytes,chimpanzee,primates catarrhini,Pan troglodytes,9598.0,GCA_002880755.3_Clint_PTRv2,6.4,6.0,6.5
+Pongo_pygmaeus,Bornean orangutan,primates catarrhini,Pongo pygmaeus,9600.0,,15.2,14.5,16.3
+Macaca_mulatta,Rhesus monkey,primates catarrhini,Macaca mulatta,9544.0,rheMac10,28.8,26.8,30.6
+Theropithecus_gelada,gelada,primates catarrhini,Theropithecus gelada,9565.0,GCF_003255815.1_Tgel_1.0,28.8,26.8,30.6
+Macaca_arctoides,stump-tailed macaque,primates catarrhini,Macaca arctoides,9540.0,,28.8,26.8,30.6
+Miopithecus_ogouensis,Northern Talapoin Monkey,primates catarrhini,Miopithecus ogouensis,100488.0,,28.8,26.8,30.6
+Macaca_fascicularis,crab-eating macaque,primates catarrhini,Macaca fascicularis,9541.0,,28.8,26.8,30.6
+Allenopithecus_nigroviridis,Allen's swamp monkey,primates catarrhini,Allenopithecus nigroviridis,54135.0,,28.8,26.8,30.6
+Symphalangus_syndactylus,siamang,primates catarrhini,Symphalangus syndactylus,9590.0,,19.5,18.8,20.3
+Lophocebus_aterrimus,black crested mangabey,primates catarrhini,Lophocebus aterrimus,75566.0,,28.8,26.8,30.6
+Mandrillus_leucophaeus,drill,primates catarrhini,Mandrillus leucophaeus,9568.0,,28.8,26.8,30.6
+Macaca_radiata,Bonnet Macaque,primates catarrhini,Macaca radiata,9548.0,,28.8,26.8,30.6
+Cercocebus_torquatus,Red-capped Mangabey,primates catarrhini,Cercocebus torquatus,9530.0,,28.8,26.8,30.6
+Cercocebus_chrysogaster,Golden-bellied Mangabey,primates catarrhini,Cercocebus chrysogaster,75569.0,,28.8,26.8,30.6
+Cercopithecus_hamlyni,Owl-faced Monkey,primates catarrhini,Cercopithecus hamlyni,9536.0,,28.8,26.8,30.6
+Macaca_siberu,Siberut Macaque,primates catarrhini,Macaca siberu,244255.0,,28.8,26.8,30.6
+Macaca_nemestrina,pig-tailed macaque,primates catarrhini,Macaca nemestrina,9545.0,GCF_000956065.1_Mnem_1.0,28.8,26.8,30.6
+Cercocebus_lunulatus,White-naped Mangabey,primates catarrhini,Cercocebus lunulatus (Cercocebus atys lunulatus),75570.0,,,,
+Macaca_tonkeana,Tonkean Macaque,primates catarrhini,Macaca tonkeana,40843.0,,28.8,26.8,30.6
+Cercopithecus_diana,Diana Monkey,primates catarrhini,Cercopithecus diana,36224.0,,28.8,26.8,30.6
+Erythrocebus_patas,red guenon,primates catarrhini,Erythrocebus patas,9538.0,,28.8,26.8,30.6
+Macaca_leonina,Northern Pig-tailed Macaque,primates catarrhini,Macaca leonina,90387.0,,28.8,26.8,30.6
+Macaca_maura,Moor Macaque,primates catarrhini,Macaca maura,90383.0,,28.8,26.8,30.6
+Papio_papio,Guinea Baboon,primates catarrhini,Papio papio,100937.0,,28.8,26.8,30.6
+Papio_hamadryas,hamadryas baboon,primates catarrhini,Papio hamadryas,9557.0,,28.8,26.8,30.6
+Macaca_silenus,liontail macaque,primates catarrhini,Macaca silenus,54601.0,,28.8,26.8,30.6
+Papio_anubis,olive baboon,primates catarrhini,Papio anubis,9555.0,GCA_000264685.2_Panu_3.0,28.8,26.8,30.6
+Cercopithecus_roloway,Roloway Monkey,primates catarrhini,Cercopithecus roloway,1137049.0,,28.8,26.8,30.6
+Papio_kindae,Kinda Baboon,primates catarrhini,Papio kindae,208091.0,,28.8,26.8,30.6
+Papio_ursinus,Chacma Baboon,primates catarrhini,Papio ursinus,36229.0,,28.8,26.8,30.6
+Allochrocebus_solatus,Sun-tailed Monkey,primates catarrhini,Allochrocebus solatus,147650.0,,28.8,26.8,30.6
+Rhinopithecus_roxellana,golden snub-nosed monkey,primates catarrhini,Rhinopithecus roxellana,61622.0,GCF_007565055.1_ASM756505v1,28.8,26.8,30.6
+Chlorocebus_pygerythrus,Vervet Monkey,primates catarrhini,Chlorocebus pygerythrus,60710.0,,28.8,26.8,30.6
+Cercocebus_atys,sooty mangabey,primates catarrhini,Cercocebus atys,9531.0,GCF_000955945.1_Caty_1.0,28.8,26.8,30.6
+Chlorocebus_sabaeus,green monkey,primates catarrhini,Chlorocebus sabaeus,60711.0,GCA_000409795.2_Chlorocebus_sabeus_1.1,28.8,26.8,30.6
+Cercopithecus_neglectus,De Brazza's monkey,primates catarrhini,Cercopithecus neglectus,36227.0,,28.8,26.8,30.6
+Papio_cynocephalus,Yellow Baboon,primates catarrhini,Papio cynocephalus,9556.0,,28.8,26.8,30.6
+Macaca_nigra,Celebes crested macaque,primates catarrhini,Macaca nigra,54600.0,,28.8,26.8,30.6
+Nasalis_larvatus,proboscis monkey,primates catarrhini,Nasalis larvatus,43780.0,,28.8,26.8,30.6
+Allochrocebus_preussi,Preuss's Monkey,primates catarrhini,Allochrocebus preussi,147649.0,,28.8,26.8,30.6
+Cercopithecus_nictitans,Putty-nosed Monkey,primates catarrhini,Cercopithecus nictitans,36228.0,,28.8,26.8,30.6
+Presbytis_comata,Javan Surili,primates catarrhini,Presbytis comata,78452.0,,28.8,26.8,30.6
+Cercopithecus_albogularis,Sykes' Monkey,primates catarrhini,Cercopithecus albogularis,36225.0,,28.8,26.8,30.6
+Allochrocebus_lhoesti,LHoests Monkey,primates catarrhini,Allochrocebus lhoesti,100224.0,,28.8,26.8,30.6
+Cercopithecus_pogonias,Crowned Monkey,primates catarrhini,Cercopithecus pogonias,102108.0,,28.8,26.8,30.6
+Presbytis_mitrata,Southern Mitered Langur,primates catarrhini,Presbytis mitrata (Presbytis melalophos mitrata),272115.0,,,,
+Pygathrix_cinerea,Grey-shanked Douc Langur,primates catarrhini,Pygathrix cinerea,693712.0,,28.8,26.8,30.6
+Cercopithecus_mona,Mona monkey,primates catarrhini,Cercopithecus mona,36226.0,,28.8,26.8,30.6
+Cercopithecus_petaurista,Spot-nosed Monkey,primates catarrhini,Cercopithecus petaurista,100487.0,,28.8,26.8,30.6
+Chlorocebus_aethiops,grivet,primates catarrhini,Chlorocebus aethiops,9534.0,,28.8,26.8,30.6
+Cercopithecus_lowei,Lowes Monkey,primates catarrhini,Cercopithecus lowei,304410.0,,,,
+Nomascus_annamensis,Northern Yellow-cheeked Crested Gibbon,primates catarrhini,Nomascus annamensis,1616038.0,,19.5,18.8,20.3
+Nomascus_gabriellae,Red-cheeked Gibbon,primates catarrhini,Nomascus gabriellae,61852.0,,19.5,18.8,20.3
+Macaca_fuscata,Japanese macaque,primates catarrhini,Macaca fuscata,9542.0,,28.8,26.8,30.6
+Piliocolobus_badius,Western Red Colobus,primates catarrhini,Piliocolobus badius,164648.0,,28.8,26.8,30.6
+Nomascus_siki_a,southern white-cheeked gibbon,primates catarrhini,Nomascus siki_a,9586.0,,,,
+Macaca_cyclopis,Taiwan macaque,primates catarrhini,Macaca cyclopis,78449.0,,28.8,26.8,30.6
+Pygathrix_nigripes_a,black-shanked douc langur,primates catarrhini,Pygathrix nigripes,310352.0,,28.8,26.8,30.6
+Colobus_polykomos,King Colobus,primates catarrhini,Colobus polykomos,9572.0,,28.8,26.8,30.6
+Nomascus_concolor,Black Crested Gibbon,primates catarrhini,Nomascus concolor,29089.0,,19.5,18.8,20.3
+Piliocolobus_gordonorum,Udzungwa Red Colobus,primates catarrhini,Piliocolobus gordonorum,591933.0,,28.8,26.8,30.6
+Trachypithecus_geei,Gee's Golden Langur,primates catarrhini,Trachypithecus geei,164650.0,,28.8,26.8,30.6
+Hylobates_klossii,Kloss's Gibbon,primates catarrhini,Hylobates klossii,9587.0,,19.5,18.8,20.3
+Trachypithecus_obscurus,Spectacled Leaf Monkey,primates catarrhini,Trachypithecus obscurus,54181.0,,28.8,26.8,30.6
+Piliocolobus_kirkii,Zanzibar Red Colobus,primates catarrhini,Piliocolobus kirkii,591937.0,,28.8,26.8,30.6
+Trachypithecus_germaini,Indochinese Silvered Langur,primates catarrhini,Trachypithecus germaini,271260.0,,28.8,26.8,30.6
+Trachypithecus_hatinhensis,Hatinh Langur,primates catarrhini,Trachypithecus hatinhensis,867383.0,,28.8,26.8,30.6
+Cercopithecus_cephus,Moustached Monkey,primates catarrhini,Cercopithecus cephus,9535.0,,28.8,26.8,30.6
+Trachypithecus_laotum,Laotian Langur,primates catarrhini,Trachypithecus laotum,465718.0,,28.8,26.8,30.6
+Trachypithecus_francoisi,Francois's langur,primates catarrhini,Trachypithecus francoisi,54180.0,,28.8,26.8,30.6
+Semnopithecus_vetulus,Purple-faced Langur,primates catarrhini,Semnopithecus vetulus (Trachypithecus vetulus),54137.0,,,,
+Trachypithecus_pileatus,Capped Langur,primates catarrhini,Trachypithecus pileatus,164651.0,,28.8,26.8,30.6
+Piliocolobus_tephrosceles,Ugandan red Colobus,primates catarrhini,Piliocolobus tephrosceles,591936.0,GCF_002776525.2_ASM277652v2,28.8,26.8,30.6
+Trachypithecus_auratus,Spangled Ebony Langur,primates catarrhini,Trachypithecus auratus,222416.0,,28.8,26.8,30.6
+Cercopithecus_ascanius,Red-tailed Monkey,primates catarrhini,Cercopithecus ascanius,36223.0,,28.8,26.8,30.6
+Trachypithecus_cristatus,Silvery Lutung,primates catarrhini,Trachypithecus cristatus,122765.0,,28.8,26.8,30.6
+Semnopithecus_johnii,Nilgiri Langur,primates catarrhini,Semnopithecus johnii (Trachypithecus johnii),66063.0,,,,
+Trachypithecus_crepusculus,Indochinese grey langur,primates catarrhini,Trachypithecus crepusculus (Trachypithecus phayrei crepuscula),272121.0,,,,
+Trachypithecus_leucocephalus,White-headed langur,primates catarrhini,Trachypithecus leucocephalus (Trachypithecus poliocephalus),465719.0,,,,
+Pan_paniscus,pygmy chimpanzee,primates catarrhini,Pan paniscus,9597.0,GCA_000258655.2_panpan1.1,6.4,6.0,6.5
+Nomascus_siki_b,northern white-cheeked gibbon,primates catarrhini,Nomascus siki_b,9586.0,,,,
+Hylobates_agilis,Agile Gibbon,primates catarrhini,Hylobates agilis,9579.0,,19.5,18.8,20.3
+Trachypithecus_melamera,Phayre's Leaf-monkey,primates catarrhini,Trachypithecus melamera,,,,,
+Semnopithecus_schistaceus,Nepal Gray Langur,primates catarrhini,Semnopithecus schistaceus,2804203.0,,28.8,26.8,30.6
+Hylobates_abbotti,Abbott's Gray Gibbon,primates catarrhini,Hylobates abbotti (Hylobates muelleri abbotti),716694.0,,,,
+Hylobates_muelleri,Bornean Gibbon,primates catarrhini,Hylobates muelleri,9588.0,,19.5,18.8,20.3
+Semnopithecus_priam,Tufted Gray Langur,primates catarrhini,Semnopithecus priam,1208733.0,,28.8,26.8,30.6
+Semnopithecus_hypoleucos,Black-footed Gray Langur,primates catarrhini,Semnopithecus hypoleucos,1208734.0,,28.8,26.8,30.6
+Colobus_guereza,mantled guereza,primates catarrhini,Colobus guereza,33548.0,,28.8,26.8,30.6
+Semnopithecus_entellus,Hanuman langur,primates catarrhini,Semnopithecus entellus,88029.0,,28.8,26.8,30.6
+Hylobates_lar,White-handed gibbon,primates catarrhini,Hylobates lar,,ucsc has incorrect record,19.5,18.8,20.3
+Rhinopithecus_bieti,black snub-nosed monkey,primates catarrhini,Rhinopithecus bieti,61621.0,,28.8,26.8,30.6
+Rhinopithecus_strykeri,Burmese snub-nosed monkey,primates catarrhini,Rhinopithecus strykeri,1194336.0,,28.8,26.8,30.6
+Colobus_angolensis,Angolan colobus,primates catarrhini,Colobus angolensis,54131.0,colAng1,28.8,26.8,30.6
+Hylobates_pileatus,Pileated Gibbon,primates catarrhini,Hylobates pileatus,9589.0,,19.5,18.8,20.3
+Pygathrix_nigripes_b,black-shanked douc langur,primates catarrhini,Pygathrix nigripes,310352.0,,28.8,26.8,30.6
+Macaca_thibetana,Milne-edwards' Macaque,primates catarrhini,Macaca thibetana,54602.0,,28.8,26.8,30.6
+Trachypithecus_phayrei,Phayre's Leaf-monkey,primates catarrhini,Trachypithecus phayrei,61618.0,,28.8,26.8,30.6
+Macaca_assamensis,Assam macaque,primates catarrhini,Macaca assamensis,9551.0,,28.8,26.8,30.6
+Hoolock_leuconedys,Eastern hoolock gibbon,primates catarrhini,Hoolock leuconedys,61851.0,,19.5,18.8,20.3
+Mandrillus_sphinx,mandrill,primates catarrhini,Mandrillus sphinx,9561.0,,28.8,26.8,30.6
+Pithecia_chrysocephala,White-faced Saki,primates platyrrhini,Pithecia chrysocephala,2946515.0,,43.0,40.0,44.2
+Pithecia_hirsuta,Monk Saki,primates platyrrhini,Pithecia hirsuta,2946516.0,,43.0,40.0,44.2
+Pithecia_pithecia,white-faced saki,primates platyrrhini,Pithecia pithecia,43777.0,,43.0,40.0,44.2
+Pithecia_mittermeieri,Mittermeier's Tapaj?s saki,primates platyrrhini,Pithecia mittermeieri,2946517.0,,43.0,40.0,44.2
+Pithecia_albicans,Buffy Saki,primates platyrrhini,Pithecia albicans,2946514.0,,43.0,40.0,44.2
+Pithecia_pissinattii,Pissinatti's saki,primates platyrrhini,Pithecia pissinattii (Pithecia pissinatti),2946518.0,,,,
+Pithecia_vanzolinii,Vanzolini's Bald-faced Saki,primates platyrrhini,Pithecia vanzolinii,2946519.0,,43.0,40.0,44.2
+Cacajao_calvus,Bald-headed Uacari,primates platyrrhini,Cacajao calvus,30596.0,,43.0,40.0,44.2
+Cacajao_ayresi,Ayres Black Uakari,primates platyrrhini,Cacajao ayresi,535896.0,,43.0,40.0,44.2
+Cacajao_melanocephalus,Black-headed Uacari,primates platyrrhini,Cacajao melanocephalus,70825.0,,43.0,40.0,44.2
+Cacajao_hosomi,Black-headed Uacari,primates platyrrhini,Cacajao hosomi,535897.0,,43.0,40.0,44.2
+Chiropotes_sagulatus,Reddish-brown bearded saki,primates platyrrhini,Chiropotes sagulatus (Chiropotes chiropotes),658221.0,,,,
+Chiropotes_israelita,brown-backed bearded saki,primates platyrrhini,Chiropotes israelita,280163.0,,43.0,40.0,44.2
+Cheracebus_lugens,Collared Titi Monkey,primates platyrrhini,Cheracebus lugens,210166.0,,43.0,40.0,44.2
+Plecturocebus_brunneus,Brown Titi Monkey,primates platyrrhini,Plecturocebus brunneus,1812042.0,,43.0,40.0,44.2
+Plecturocebus_hoffmannsi,Hoffmanns's titi monkey,primates platyrrhini,Plecturocebus hoffmannsi,78255.0,,43.0,40.0,44.2
+Plecturocebus_miltoni,Milton's Titi Monkey,primates platyrrhini,Plecturocebus miltoni,1812038.0,,43.0,40.0,44.2
+Cheracebus_torquatus,Widow Monkey,primates platyrrhini,Cheracebus torquatus,30592.0,,43.0,40.0,44.2
+Plecturocebus_cinerascens,Ashy Black Titi Monkey,primates platyrrhini,Plecturocebus cinerascens,1812037.0,,43.0,40.0,44.2
+Plecturocebus_bernhardi,Prince Bernhard's Titi Monkey,primates platyrrhini,Plecturocebus bernhardi,1812036.0,,43.0,40.0,44.2
+Cheracebus_lucifer,Yellow-handed Titi Monkey,primates platyrrhini,Cheracebus lucifer,2487712.0,,43.0,40.0,44.2
+Plecturocebus_cupreus,Coppery Titi Monkey,primates platyrrhini,Plecturocebus cupreus,202457.0,,43.0,40.0,44.2
+Plecturocebus_caligatus,Chestnut-bellied Titi,primates platyrrhini,Plecturocebus caligatus,867332.0,,43.0,40.0,44.2
+Plecturocebus_dubius,Hershkovitzs Titi,primates platyrrhini,Plecturocebus dubius,2946520.0,,43.0,40.0,44.2
+Plecturocebus_moloch,Red-bellied Titi Monkey,primates platyrrhini,Plecturocebus moloch,9523.0,,43.0,40.0,44.2
+Plecturocebus_grovesi,Groves' Titi,primates platyrrhini,Plecturocebus grovesi,2488670.0,,43.0,40.0,44.2
+Ateles_geoffroyi_a,black-handed spider monkey,primates platyrrhini,Ateles geoffroyi_a,9509.0,,,,
+Cheracebus_regulus,Widow Monkey,primates platyrrhini,Cheracebus regulus,1812110.0,,43.0,40.0,44.2
+Ateles_paniscus,Guiana Spider Monkey,primates platyrrhini,Ateles paniscus,9510.0,,43.0,40.0,44.2
+Ateles_chamek,Black-faced Black Spider Monkey,primates platyrrhini,Ateles chamek,118643.0,,43.0,40.0,44.2
+Ateles_marginatus,White-cheeked Spider Monkey,primates platyrrhini,Ateles marginatus,1529884.0,,43.0,40.0,44.2
+Ateles_belzebuth,White-bellied Spider Monkey,primates platyrrhini,Ateles belzebuth,9507.0,,43.0,40.0,44.2
+Lagothrix_lagothricha,Common Woolly Monkey,primates platyrrhini,Lagothrix lagothricha (Lagothrix lagotricha),9519.0,,,,
+Sapajus_macrocephalus,large-headed capuchin,primates platyrrhini,Sapajus macrocephalus (Sapajus apella macrocephalus),1547595.0,,,,
+Cebus_unicolor,Spixs White-fronted Capuchin,primates platyrrhini,Cebus unicolor,1985288.0,,43.0,40.0,44.2
+Ateles_geoffroyi_b,Central American spider monkey,primates platyrrhini,Ateles geoffroyi_b,9509.0,,,,
+Cebus_olivaceus,Guinan Weeper Capuchin,primates platyrrhini,Cebus olivaceus,37295.0,,43.0,40.0,44.2
+Alouatta_palliata,mantled howler monkey,primates platyrrhini,Alouatta palliata,30589.0,,43.0,40.0,44.2
+Cebus_albifrons,white-fronted capuchin,primates platyrrhini,Cebus albifrons,9514.0,,43.0,40.0,44.2
+Aotus_trivirgatus,Northern Night Monkey,primates platyrrhini,Aotus trivirgatus,9505.0,,43.0,40.0,44.2
+Aotus_griseimembra,Grey-handed Night Monkey,primates platyrrhini,Aotus griseimembra,292213.0,,43.0,40.0,44.2
+Alouatta_caraya,Black-and-gold Howler Monkey,primates platyrrhini,Alouatta caraya,9502.0,,43.0,40.0,44.2
+Aotus_vociferans,Spixs Night Monkey,primates platyrrhini,Aotus vociferans,57176.0,,43.0,40.0,44.2
+Alouatta_belzebul,Red-handed Howler Monkey,primates platyrrhini,Alouatta belzebul,30590.0,,43.0,40.0,44.2
+Alouatta_discolor,Red-handed Howler Monkey,primates platyrrhini,Alouatta discolor,2905217.0,,43.0,40.0,44.2
+Aotus_azarae,Azara's Night Monkey,primates platyrrhini,Aotus azarae (Aotus azarai),30591.0,,,,
+Alouatta_puruensis,Pur?s Red Howler Monkey,primates platyrrhini,Alouatta puruensis (Alouatta seniculus puruensis),1347729.0,,,,
+Alouatta_nigerrima,Black Howler Monkey,primates platyrrhini,Alouatta nigerrima (Alouatta belzebul),30590.0,,,,
+Alouatta_macconnelli,Guianan Red Howler Monkey,primates platyrrhini,Alouatta macconnelli,198115.0,,43.0,40.0,44.2
+Alouatta_juara,Colombian Red Howler Monkey,primates platyrrhini,Alouatta juara,2946512.0,,43.0,40.0,44.2
+Alouatta_seniculus,Colombian Red Howler Monkey,primates platyrrhini,Alouatta seniculus,9503.0,,43.0,40.0,44.2
+Sapajus_apella,tufted capuchin,primates platyrrhini,Sapajus apella,9515.0,,43.0,40.0,44.2
+Aotus_nancymaae,Ma's night monkey,primates platyrrhini,Aotus nancymaae,37293.0,GCA_000952055.2_Anan_2.0,43.0,40.0,44.2
+Saimiri_boliviensis,Bolivian squirrel monkey,primates platyrrhini,Saimiri boliviensis,27679.0,GCF_016699345.1_BCM_Sbol_2.0,43.0,40.0,44.2
+Chiropotes_albinasus,White-nosed Saki,primates platyrrhini,Chiropotes albinasus,198627.0,,43.0,40.0,44.2
+Leontocebus_nigricollis,Black Mantle Tamarin,primates platyrrhini,Leontocebus nigricollis,9489.0,,43.0,40.0,44.2
+Leontocebus_fuscicollis,brown-mantled tamarin,primates platyrrhini,Leontocebus fuscicollis,9487.0,,43.0,40.0,44.2
+Leontocebus_illigeri,Illiger's saddle-back tamarin,primates platyrrhini,Leontocebus illigeri (Leontocebus fuscicollis illigeri),881947.0,,,,
+Saguinus_oedipus,Cotton-headed Tamarin,primates platyrrhini,Saguinus oedipus,9490.0,,43.0,40.0,44.2
+Saguinus_bicolor,Pied Tamarin,primates platyrrhini,Saguinus bicolor,37588.0,,43.0,40.0,44.2
+Saguinus_geoffroyi,Geoffroy's Tamarin,primates platyrrhini,Saguinus geoffroyi,43778.0,,43.0,40.0,44.2
+Saguinus_inustus,White-fronted Titi Monkey,primates platyrrhini,Saguinus inustus,1079039.0,,43.0,40.0,44.2
+Saguinus_mystax,Moustached Tamarin,primates platyrrhini,Saguinus mystax,9488.0,,43.0,40.0,44.2
+Saguinus_imperator,tamarin,primates platyrrhini,Saguinus imperator,9491.0,,43.0,40.0,44.2
+Saimiri_sciureus,Guianan Squirrel Monkey,primates platyrrhini,Saimiri sciureus,9521.0,,43.0,40.0,44.2
+Saguinus_labiatus,Red-chested Mustached Tamarin,primates platyrrhini,Saguinus labiatus,78454.0,,43.0,40.0,44.2
+Callimico_goeldii,Goeldi's Monkey,primates platyrrhini,Callimico goeldii,9495.0,,43.0,40.0,44.2
+Saimiri_oerstedii,Black-crowned Central American Squirrel Monkey,primates platyrrhini,Saimiri oerstedii,70928.0,,43.0,40.0,44.2
+Leontopithecus_chrysomelas,Golden-headed Lion Tamarin,primates platyrrhini,Leontopithecus chrysomelas,57374.0,,43.0,40.0,44.2
+Leontopithecus_rosalia,golden lion tamarin,primates platyrrhini,Leontopithecus rosalia,30588.0,,43.0,40.0,44.2
+Saimiri_cassiquiarensis,Humboldt's Squirrel Monkey,primates platyrrhini,Saimiri cassiquiarensis,2946521.0,,43.0,40.0,44.2
+Saimiri_ustus,bare-eared squirrel monkey,primates platyrrhini,Saimiri ustus,66265.0,,43.0,40.0,44.2
+Saimiri_macrodon,Ecuadorian squirrel monkey,primates platyrrhini,Saimiri macrodon,2946522.0,,43.0,40.0,44.2
+Callithrix_jacchus,white-tufted-ear marmoset,primates platyrrhini,Callithrix jacchus,9483.0,,43.0,40.0,44.2
+Cebuella_niveiventris,Eastern Pygmy Marmoset,primates platyrrhini,Cebuella niveiventris,2826950.0,,43.0,40.0,44.2
+Cebuella_pygmaea,Western Pygmy Marmoset,primates platyrrhini,Cebuella pygmaea,9493.0,,43.0,40.0,44.2
+Mico_humeralifer,Black And White Tassel-ear Marmoset,primates platyrrhini,Mico humeralifer,52232.0,,43.0,40.0,44.2
+Callibella_humilis,Black-crowned Dwarf Marmoset,primates platyrrhini,Callibella humilis (Mico humilis),666519.0,,,,
+Mico_schneideri,Mico schneideri,primates platyrrhini,Mico schneideri,,,,,
+Mico_argentatus,Silvery Marmoset,primates platyrrhini,Mico argentatus,9482.0,,43.0,40.0,44.2
+Saguinus_midas,Midas tamarin,primates platyrrhini,Saguinus midas,30586.0,,43.0,40.0,44.2
+Callithrix_kuhlii,Wieds Marmoset,primates platyrrhini,Callithrix kuhlii,867363.0,,43.0,40.0,44.2
+Callithrix_geoffroyi,Geoffroy's Tufted-ear Marmoset,primates platyrrhini,Callithrix geoffroyi,52231.0,,43.0,40.0,44.2
+Cephalopachus_bancanus,Horsfield's tarsier,primates tarsiidae,Cephalopachus bancanus,9477.0,,69.0,61.6,71.1
+Carlito_syrichta,Philippine tarsier,primates tarsiidae,Carlito syrichta,1868482.0,tarSyr2,69.0,61.6,71.1
+Tarsius_lariang,Lariang Tarsier,primates tarsiidae,Tarsius lariang,630277.0,,69.0,61.6,71.1
+Tarsius_wallacei,Wallace's Tarsier,primates tarsiidae,Tarsius wallacei,981131.0,,69.0,61.6,71.1
+Daubentonia_madagascariensis,aye-aye,primates strepsirrhini,Daubentonia madagascariensis,31869.0,,74.0,71.4,77.5
+Propithecus_coronatus,Crowned Sifaka,primates strepsirrhini,Propithecus coronatus (Propithecus deckenii coronatus),475619.0,,,,
+Propithecus_perrieri,Perrier's Sifaka,primates strepsirrhini,Propithecus perrieri,989338.0,,74.0,71.4,77.5
+Varecia_variegata,ruffed lemur,primates strepsirrhini,Varecia variegata,9455.0,,74.0,71.4,77.5
+Propithecus_diadema,Diademed Sifaka,primates strepsirrhini,Propithecus diadema,83281.0,,74.0,71.4,77.5
+Propithecus_edwardsi,Milne-Edwards Sifaka,primates strepsirrhini,Propithecus edwardsi,543559.0,,74.0,71.4,77.5
+Indri_indri,babakoto,primates strepsirrhini,Indri indri,34827.0,,74.0,71.4,77.5
+Propithecus_tattersalli,Golden-crowned Sifaka,primates strepsirrhini,Propithecus tattersalli,30601.0,,74.0,71.4,77.5
+Avahi_laniger,Eastern Woolly Lemur,primates strepsirrhini,Avahi laniger,122246.0,,74.0,71.4,77.5
+Propithecus_verreauxi,Verreauxs Sifaka,primates strepsirrhini,Propithecus verreauxi,34825.0,,74.0,71.4,77.5
+Avahi_peyrierasi,Peyrieras Woolly Lemur,primates strepsirrhini,Avahi peyrierasi,1313323.0,,74.0,71.4,77.5
+Varecia_rubra,Red Ruffed Lemur,primates strepsirrhini,Varecia rubra,554167.0,,74.0,71.4,77.5
+Prolemur_simus,greater bamboo lemur,primates strepsirrhini,Prolemur simus,1328070.0,,74.0,71.4,77.5
+Eulemur_rubriventer,Red-bellied Lemur,primates strepsirrhini,Eulemur rubriventer,34829.0,,74.0,71.4,77.5
+Eulemur_mongoz,mongoose lemur,primates strepsirrhini,Eulemur mongoz,34828.0,,74.0,71.4,77.5
+Cheirogaleus_major,Geoffroys Dwarf Lemur,primates strepsirrhini,Cheirogaleus major,47177.0,,74.0,71.4,77.5
+Eulemur_coronatus,Crowned Lemur,primates strepsirrhini,Eulemur coronatus,13514.0,,74.0,71.4,77.5
+Eulemur_macaco,black lemur,primates strepsirrhini,Eulemur macaco,30602.0,,74.0,71.4,77.5
+Cheirogaleus_medius,lesser dwarf lemur,primates strepsirrhini,Cheirogaleus medius,9460.0,,74.0,71.4,77.5
+Eulemur_flavifrons,Sclater's lemur,primates strepsirrhini,Eulemur flavifrons,87288.0,,74.0,71.4,77.5
+Propithecus_coquerelli,Coquerel's sifaka,primates strepsirrhini,Propithecus coquerelli (Propithecus coquereli),379532.0,proCoq1,,,
+Eulemur_collaris,Collared Brown Lemur,primates strepsirrhini,Eulemur collaris (Eulemur fulvus collaris),47178.0,,,,
+Lepilemur_ruficaudatus,Red-tailed Sportive Lemur,primates strepsirrhini,Lepilemur ruficaudatus,78866.0,,74.0,71.4,77.5
+Eulemur_rufus,Red Brown Lemur,primates strepsirrhini,Eulemur rufus,859983.0,,74.0,71.4,77.5
+Eulemur_sanfordi,Sanfords Brown Lemur,primates strepsirrhini,Eulemur sanfordi,122225.0,,74.0,71.4,77.5
+Eulemur_albifrons,White-fronted Lemur,primates strepsirrhini,Eulemur albifrons,1215604.0,,74.0,71.4,77.5
+Lepilemur_dorsalis,Gray's Sportive Lemur,primates strepsirrhini,Lepilemur dorsalis,78583.0,,74.0,71.4,77.5
+Eulemur_fulvus,brown lemur,primates strepsirrhini,Eulemur fulvus,13515.0,,74.0,71.4,77.5
+Lepilemur_septentrionalis,Sahafary Sportive Lemur,primates strepsirrhini,Lepilemur septentrionalis,78584.0,,74.0,71.4,77.5
+Hapalemur_occidentalis,Sambirano Lesser Bamboo Lemur,primates strepsirrhini,Hapalemur occidentalis,867377.0,,74.0,71.4,77.5
+Hapalemur_alaotrensis,Alaotra Reed Lemur,primates strepsirrhini,Hapalemur alaotrensis (Hapalemur griseus alaotrensis),122220.0,,,,
+Hapalemur_griseus,Eastern Lesser Bamboo Lemur,primates strepsirrhini,Hapalemur griseus,13557.0,,74.0,71.4,77.5
+Lepilemur_ankaranensis,Ankarana Sportive Lemur,primates strepsirrhini,Lepilemur ankaranensis,342401.0,,74.0,71.4,77.5
+Lemur_catta,ring-tailed lemur,primates strepsirrhini,Lemur catta,9447.0,,74.0,71.4,77.5
+Hapalemur_gilberti,gray bamboo lemur,primates strepsirrhini,Hapalemur gilberti,3043110.0,,,,
+Hapalemur_meridionalis,Rusty-gray Lesser Bamboo Lemur,primates strepsirrhini,Hapalemur meridionalis,3043112.0,,,,
+Galagoides_demidoff,Demidoffs Dwarf Galago,primates strepsirrhini,Galagoides demidoff,89672.0,,74.0,71.4,77.5
+Mirza_zaza,northern giant mouse lemur,primates strepsirrhini,Mirza zaza,339999.0,,74.0,71.4,77.5
+Microcebus_murinus,gray mouse lemur,primates strepsirrhini,Microcebus murinus,30608.0,GCA_000165445.3_Mmur_3.0,74.0,71.4,77.5
+Otolemur_garnettii,small-eared galago,primates strepsirrhini,Otolemur garnettii,30611.0,otoGar3,74.0,71.4,77.5
+Galago_senegalensis,Northern Lesser Galago,primates strepsirrhini,Galago senegalensis,9465.0,,74.0,71.4,77.5
+Otolemur_crassicaudatus,Thick-tailed Greater Galago,primates strepsirrhini,Otolemur crassicaudatus,9463.0,,74.0,71.4,77.5
+Loris_lydekkerianus,Grey Slender Loris,primates strepsirrhini,Loris lydekkerianus,300163.0,,74.0,71.4,77.5
+Loris_tardigradus,slender loris,primates strepsirrhini,Loris tardigradus,9468.0,,74.0,71.4,77.5
+Perodicticus_potto,West African Potto,primates strepsirrhini,Perodicticus potto,9472.0,,74.0,71.4,77.5
+Perodicticus_ibeanus,East African Potto,primates strepsirrhini,Perodicticus ibeanus (Perodicticus potto ibeanus),261737.0,,,,
+Galago_moholi,Moholi bushbaby,primates strepsirrhini,Galago moholi,30609.0,,74.0,71.4,77.5
+Nycticebus_pygmaeus,Pygmy Slow Loris,primates strepsirrhini,Nycticebus pygmaeus (Xanthonycticebus pygmaeus),101278.0,,,,
+Nycticebus_bengalensis,Bengal slow loris,primates strepsirrhini,Nycticebus bengalensis,261741.0,,74.0,71.4,77.5
+Arctocebus_calabarensis,Calabar Angwantibo,primates strepsirrhini,Arctocebus calabarensis,261739.0,,74.0,71.4,77.5
+Nycticebus_coucang,slow loris,primates strepsirrhini,Nycticebus coucang,9470.0,,74.0,71.4,77.5
+Panthera_onca,jaguar,carnivora,Panthera onca,9690.0,GCA_004023805.1_PanOnc_v1_BIUU,94.0,91.5,97.4
+Panthera_pardus,leopard,carnivora,Panthera pardus,9691.0,GCA_001857705.1_PanPar1.0,94.0,91.5,97.4
+Ailuropoda_melanoleuca,giant panda,carnivora,Ailuropoda melanoleuca,9646.0,GCA_002007445.1_ASM200744v1,94.0,91.5,97.4
+Neomonachus_schauinslandi,Hawaiian monk seal,carnivora,Neomonachus schauinslandi,29088.0,GCA_002201575.1_ASM220157v1,94.0,91.5,97.4
+Zalophus_californianus,California sea lion,carnivora,Zalophus californianus,9704.0,GCA_004024565.1_ZalCal_v1_BIUU,94.0,91.5,97.4
+Canis_lupus_orion,Greenland wolf,carnivora,Canis lupus orion,2605939.0,GCA_905319855.2_mCanLor1.2,94.0,91.5,97.4
+Odobenus_rosmarus,Pacific walrus,carnivora,Odobenus rosmarus,9707.0,odoRosDiv1,94.0,91.5,97.4
+Felis_catus_fca126,domestic cat (Fca126),carnivora,Felis catus fca126 (Felis catus),9685.0,GCF_018350175.1_F.catus_Fca126_mat1.0,,,
+Mirounga_angustirostris,northern elephant seal,carnivora,Mirounga angustirostris,9716.0,GCA_004023865.1_MirAng_v1_BIUU,94.0,91.5,97.4
+Felis_catus,domestic cat,carnivora,Felis catus,9685.0,felCat8,94.0,91.5,97.4
+Canis_lupus_VD,domestic dog (BS72/Village Dog),carnivora,Canis lupus familiaris,,GCA_004027395.1_CanFam_VD_v1_BIUU,94.0,91.5,97.4
+CanFam4,German Shepherd dog (Mischka),carnivora,Canis lupus familiaris (CanFam4) (Canis lupus familiaris),,canFam4,,,
+Canis_lupus_dingo,dingo,carnivora,Canis lupus dingo,286419.0,,94.0,91.5,97.4
+Nyctereutes_procyonoides,raccoon dog,carnivora,Nyctereutes procyonoides,34880.0,,94.0,91.5,97.4
+Cryptoprocta_ferox,fossa,carnivora,Cryptoprocta ferox,94188.0,,94.0,91.5,97.4
+Ursus_maritimus,polar bear,carnivora,Ursus maritimus,29073.0,GCA_000687225.1_UrsMar_1.0,94.0,91.5,97.4
+Paradoxurus_hermaphroditus,Asian palm civet,carnivora,Paradoxurus hermaphroditus,71117.0,GCA_004024585.1_ParHer_v1_BIUU,94.0,91.5,97.4
+Lycaon_pictus,African hunting dog,carnivora,Lycaon pictus,9622.0,GCA_001887905.1_LycPicSAfr1.0,94.0,91.5,97.4
+Vulpes_lagopus,Arctic fox,carnivora,Vulpes lagopus,494514.0,GCA_004023825.1_VulLag_v1_BIUU,94.0,91.5,97.4
+Canis_lupus_familiaris,dog,carnivora,Canis lupus familiaris,9615.0,GCF_000002285.3_CanFam3.1,94.0,91.5,97.4
+Hyaena_hyaena,striped hyena,carnivora,Hyaena hyaena,95912.0,GCA_004023945.1_HyaHya_v1_BIUU,94.0,91.5,97.4
+Acinonyx_jubatus,Cheetah,carnivora,Acinonyx jubatus,32536.0,GCA_001443585.1_aciJub1,94.0,91.5,97.4
+Panthera_tigris,tiger,carnivora,Panthera tigris,9694.0,GCA_000464555.1_PanTig1.0,94.0,91.5,97.4
+Enhydra_lutris,Sea otter,carnivora,Enhydra lutris,34882.0,GCA_002288905.2_ASM228890v2,94.0,91.5,97.4
+Pteronura_brasiliensis,giant otter,carnivora,Pteronura brasiliensis,9672.0,,94.0,91.5,97.4
+Otocyon_megalotis,bat-eared fox,carnivora,Otocyon megalotis,9624.0,,94.0,91.5,97.4
+Leptonychotes_weddellii,Weddell seal,carnivora,Leptonychotes weddellii,9713.0,GCA_000349705.1_LepWed1.0,94.0,91.5,97.4
+Ailurus_fulgens,Lesser panda,carnivora,Ailurus fulgens,9649.0,GCA_002007465.1_ASM200746v1,94.0,91.5,97.4
+Mellivora_capensis,ratel,carnivora,Mellivora capensis,9664.0,GCA_004024625.1_MelCap_v1_BIUU,94.0,91.5,97.4
+Mungos_mungo,banded mongoose,carnivora,Mungos mungo,210652.0,GCA_004023785.1_MunMun_v1_BIUU,94.0,91.5,97.4
+Helogale_parvula,dwarf mongoose,carnivora,Helogale parvula,210647.0,GCA_004023845.1_HelPar_v1_BIUU,94.0,91.5,97.4
+Suricata_suricatta,meerkat,carnivora,Suricata suricatta,37032.0,GCA_004023905.1_SurSur_v1_BIUU,94.0,91.5,97.4
+Puma_concolor,puma,carnivora,Puma concolor,9696.0,GCA_003327715.1_PumCon1.0,94.0,91.5,97.4
+Felis_nigripes,black-footed cat,carnivora,Felis nigripes,61379.0,GCA_004023925.1_FelNig_v1_BIUU,94.0,91.5,97.4
+Mustela_putorius,European polecat,carnivora,Mustela putorius,9668.0,GCA_000239315.1_MusPutFurMale1.0,94.0,91.5,97.4
+Spilogale_gracilis,western spotted skunk,carnivora,Spilogale gracilis,30551.0,GCA_004023965.1_SpiGra_v1_BIUU,94.0,91.5,97.4
+Dicerorhinus_sumatrensis,Sumatran rhinoceros,laurasiatheria,Dicerorhinus sumatrensis,89632.0,GCA_002844835.1_ASM284483v1,94.0,91.5,97.4
+Diceros_bicornis,black rhinoceros,laurasiatheria,Diceros bicornis,9805.0,GCA_004027315.1_DicBicMic_v1_BIUU,94.0,91.5,97.4
+Tapirus_indicus,Asiatic tapir,laurasiatheria,Tapirus indicus,9802.0,GCA_004024905.1_TapInd_v1_BIUU,94.0,91.5,97.4
+Tapirus_terrestris,Brazilian tapir,laurasiatheria,Tapirus terrestris,9801.0,GCA_004025025.1_TapTer_v1_BIUU,94.0,91.5,97.4
+Ceratotherium_simum_cottoni,northern white rhinoceros,laurasiatheria,Ceratotherium simum cottoni,310713.0,,94.0,91.5,97.4
+Equus_asinus,ass,laurasiatheria,Equus asinus,9793.0,GCA_001305755.1_ASM130575v1,94.0,91.5,97.4
+Ceratotherium_simum,Southern white rhinoceros,laurasiatheria,Ceratotherium simum,9807.0,GCA_000283155.1_CerSimSim1.0,94.0,91.5,97.4
+Equus_przewalskii,Przewalski's horse,laurasiatheria,Equus przewalskii,9798.0,GCA_000696695.1_Burgud,94.0,91.5,97.4
+Equus_caballus,horse,laurasiatheria,Equus caballus,9796.0,GCA_000002305.1_EquCab2.0,94.0,91.5,97.4
+Manis_javanica,Malayan pangolin,laurasiatheria,Manis javanica,9974.0,GCA_001685135.1_ManJav1.0,94.0,91.5,97.4
+Manis_pentadactyla,Chinese pangolin,laurasiatheria,Manis pentadactyla,143292.0,GCA_000738955.1_M_pentadactyla-1.1.1,94.0,91.5,97.4
+Solenodon_paradoxus,Hispaniolan solenodon,laurasiatheria,Solenodon paradoxus,79805.0,,94.0,91.5,97.4
+Scalopus_aquaticus,eastern mole,laurasiatheria,Scalopus aquaticus,71119.0,GCA_004024925.1_ScaAqu_v1_BIUU,94.0,91.5,97.4
+Uropsilus_gracilis,gracile shrew mole,laurasiatheria,Uropsilus gracilis,182669.0,GCA_004024945.1_UroGra_v1_BIUU,94.0,91.5,97.4
+Condylura_cristata,star-nosed mole,laurasiatheria,Condylura cristata,143302.0,GCF_000260355.1_ConCri1.0,94.0,91.5,97.4
+Erinaceus_europaeus,western European hedgehog,laurasiatheria,Erinaceus europaeus,9365.0,GCA_000296755.1_EriEur2.0,94.0,91.5,97.4
+Sorex_araneus,European shrew,laurasiatheria,Sorex araneus,42254.0,sorAra2,94.0,91.5,97.4
+Crocidura_indochinensis,Indochinese shrew,laurasiatheria,Crocidura indochinensis,876679.0,GCA_004027635.1_CroInd_v1_BIUU,94.0,91.5,97.4
+Choloepus_hoffmanni,Hoffmann's two-fingered sloth,xenarthra,Choloepus hoffmanni,9358.0,GCA_000164785.2_C_hoffmanni-2.0.1,99.0,94.7,101.9
+Dasypus_novemcinctus,nine-banded armadillo,xenarthra,Dasypus novemcinctus,9361.0,GCA_000208655.2_Dasnov3.0,99.0,94.7,101.9
+Myrmecophaga_tridactyla,giant anteater,xenarthra,Myrmecophaga tridactyla,71006.0,GCA_004026745.1_MyrTri_v1_BIUU,99.0,94.7,101.9
+Tamandua_tetradactyla,southern tamandua,xenarthra,Tamandua tetradactyla,48850.0,GCA_004025105.1_TamTet_v1_BIUU,99.0,94.7,101.9
+Tolypeutes_matacus,placentals,xenarthra,Tolypeutes matacus,183749.0,,99.0,94.7,101.9
+Choloepus_didactylus,southern two-toed sloth,xenarthra,Choloepus didactylus,27675.0,GCA_004027855.1_ChoDid_v1_BIUU,99.0,94.7,101.9
+Chaetophractus_vellerosus,screaming hairy armadillo,xenarthra,Chaetophractus vellerosus,340076.0,GCA_004027955.1_ChaVel_v1_BIUU,99.0,94.7,101.9
+Eubalaena_japonica,North Pacific right whale,artiodactyla,Eubalaena japonica,302098.0,,94.0,91.5,97.4
+Eschrichtius_robustus,grey whale,artiodactyla,Eschrichtius robustus,9764.0,,94.0,91.5,97.4
+Hippopotamus_amphibius,hippopotamus,artiodactyla,Hippopotamus amphibius,9833.0,GCA_004027065.1_HipAmp_v1_BIUU,94.0,91.5,97.4
+Balaenoptera_acutorostrata,Minke whale,artiodactyla,Balaenoptera acutorostrata,9767.0,GCA_000493695.1_BalAcu1.0,94.0,91.5,97.4
+Delphinapterus_leucas,beluga whale,artiodactyla,Delphinapterus leucas,9749.0,GCA_002288925.2_ASM228892v2,94.0,91.5,97.4
+Balaenoptera_bonaerensis,Antarctic minke whale,artiodactyla,Balaenoptera bonaerensis,33556.0,GCA_000978805.1_ASM97880v1,94.0,91.5,97.4
+Inia_geoffrensis,boutu,artiodactyla,Inia geoffrensis,9725.0,,94.0,91.5,97.4
+Phocoena_phocoena,harbor porpoise,artiodactyla,Phocoena phocoena,9742.0,,94.0,91.5,97.4
+Monodon_monoceros,narwhal,artiodactyla,Monodon monoceros,40151.0,GCA_004026685.1_MonMon_M_v1_BIUU,94.0,91.5,97.4
+Lipotes_vexillifer,Yangtze River dolphin,artiodactyla,Lipotes vexillifer,118797.0,GCA_000442215.1_Lipotes_vexillifer_v1,94.0,91.5,97.4
+Orcinus_orca,killer whale,artiodactyla,Orcinus orca,9733.0,orcOrc1,94.0,91.5,97.4
+Platanista_gangetica,Ganges River dolphin,artiodactyla,Platanista gangetica,118798.0,,94.0,91.5,97.4
+Neophocaena_asiaeorientalis,Yangtze finless porpoise,artiodactyla,Neophocaena asiaeorientalis,189058.0,GCA_003031525.1_Neophocaena_asiaeorientalis_V1,94.0,91.5,97.4
+Mesoplodon_bidens,Sowerby's beaked whale,artiodactyla,Mesoplodon bidens,48745.0,,94.0,91.5,97.4
+Vicugna_pacos,alpaca,artiodactyla,Vicugna pacos,30538.0,GCA_000767525.1_Vi_pacos_V1.0,94.0,91.5,97.4
+Ziphius_cavirostris,"Cuvier's beaked whale""",artiodactyla,Ziphius cavirostris,9760.0,,94.0,91.5,97.4
+Camelus_bactrianus,Bactrian camel,artiodactyla,Camelus bactrianus,9837.0,GCA_000767855.1_Ca_bactrianus_MBC_1.0,94.0,91.5,97.4
+Camelus_dromedarius,Arabian camel,artiodactyla,Camelus dromedarius,9838.0,GCA_000767585.1_PRJNA234474_Ca_dromedarius_V1.0,94.0,91.5,97.4
+Camelus_ferus,wild Bactrian camel,artiodactyla,Camelus ferus,419612.0,GCA_000311805.2_CB1,94.0,91.5,97.4
+Kogia_breviceps,pygmy sperm whale,artiodactyla,Kogia breviceps,27615.0,,94.0,91.5,97.4
+Catagonus_wagneri,Chacoan peccary,artiodactyla,Catagonus wagneri,51154.0,GCA_004024745.1_CatWag_v1_BIUU,94.0,91.5,97.4
+Rangifer_tarandus,reindeer,artiodactyla,Rangifer tarandus,9870.0,GCA_004026565.1_RanTarSib_v1_BIUU,94.0,91.5,97.4
+Elaphurus_davidianus,Pere David's deer,artiodactyla,Elaphurus davidianus,43332.0,GCA_002443075.1_Milu1.0,94.0,91.5,97.4
+Okapia_johnstoni,okapi,artiodactyla,Okapia johnstoni,86973.0,GCA_001660835.1_ASM166083v1,94.0,91.5,97.4
+Giraffa_tippelskirchi,Masai giraffe,artiodactyla,Giraffa tippelskirchi,439328.0,GCA_001651235.1_ASM165123v1,94.0,91.5,97.4
+Moschus_moschiferus,Siberian musk deer,artiodactyla,Moschus moschiferus,68415.0,GCA_004024705.1_MosMos_v1_BIUU,94.0,91.5,97.4
+Bubalus_bubalis,water buffalo,artiodactyla,Bubalus bubalis,89462.0,GCA_000471725.1_UMD_CASPUR_WB_2.0,94.0,91.5,97.4
+Bos_taurus,cow,artiodactyla,Bos taurus,9913.0,GCA_000003205.6_Btau_5.0.1,94.0,91.5,97.4
+Antilocapra_americana,pronghorn,artiodactyla,Antilocapra americana,9891.0,GCA_004027515.1_AntAmePen_v1_BIUU,94.0,91.5,97.4
+Odocoileus_virginianus,white-tailed deer,artiodactyla,Odocoileus virginianus,9874.0,GCA_002102435.1_Ovir.te_1.0,94.0,91.5,97.4
+Ammotragus_lervia,aoudad,artiodactyla,Ammotragus lervia,9899.0,GCA_002201775.1_ALER1.0,94.0,91.5,97.4
+Ovis_canadensis,bighorn sheep,artiodactyla,Ovis canadensis,37174.0,GCA_004026945.1_OviCan_v1_BIUU,94.0,91.5,97.4
+Capra_hircus,goat,artiodactyla,Capra hircus,9925.0,GCA_001704415.1_ARS1,94.0,91.5,97.4
+Hemitragus_hylocrius,Nilgiri tahr,artiodactyla,Hemitragus hylocrius,330464.0,GCA_004026825.1_HemHyl_v1_BIUU,94.0,91.5,97.4
+Beatragus_hunteri,hirola,artiodactyla,Beatragus hunteri,59527.0,GCA_004027495.1_BeaHun_v1_BIUU,94.0,91.5,97.4
+Bos_mutus,wild yak,artiodactyla,Bos mutus,72004.0,bosMut1,94.0,91.5,97.4
+Bison_bison,American bison,artiodactyla,Bison bison,9901.0,GCA_000754665.1_Bison_UMD1.0,94.0,91.5,97.4
+Ovis_aries,sheep,artiodactyla,Ovis aries,9940.0,GCA_000298735.2_Oar_v4.0,94.0,91.5,97.4
+Pantholops_hodgsonii,chiru,artiodactyla,Pantholops hodgsonii,59538.0,GCA_000400835.1_PHO1.0,94.0,91.5,97.4
+Capra_aegagrus,wild goat,artiodactyla,Capra aegagrus,9923.0,GCA_000978405.1_CapAeg_1.0,94.0,91.5,97.4
+Tragulus_javanicus,Java mouse-deer,artiodactyla,Tragulus javanicus,9849.0,GCA_004024965.1_TraJav_v1_BIUU,94.0,91.5,97.4
+Sus_scrofa,pig,artiodactyla,Sus scrofa,9823.0,susScr3,94.0,91.5,97.4
+Bos_indicus,zebu cattle,artiodactyla,Bos indicus,9915.0,GCA_000247795.2_Bos_indicus_1.0,94.0,91.5,97.4
+Tursiops_truncatus,common bottlenose dolphin,artiodactyla,Tursiops truncatus,9739.0,GCA_001922835.1_NIST_Tur_tru_v1,94.0,91.5,97.4
+Saiga_tatarica,Saiga antelope,artiodactyla,Saiga tatarica,34875.0,GCA_004024985.1_SaiTat_v1_BIUU,94.0,91.5,97.4
+Rhinolophus_sinicus,Chinese rufous horseshoe bat,chiroptera,Rhinolophus sinicus,89399.0,GCA_001888835.1_ASM188883v1,94.0,91.5,97.4
+Pteropus_alecto,black flying fox,chiroptera,Pteropus alecto,9402.0,pteAle1,94.0,91.5,97.4
+Hipposideros_galeritus,Cantor's roundleaf bat,chiroptera,Hipposideros galeritus,58069.0,,94.0,91.5,97.4
+Rousettus_aegyptiacus,Egyptian rousette,chiroptera,Rousettus aegyptiacus,9407.0,GCA_004024865.1_RouAeg_v1_BIUU,94.0,91.5,97.4
+Macroglossus_sobrinus,long-tongued fruit bat,chiroptera,Macroglossus sobrinus,326083.0,,94.0,91.5,97.4
+Pteropus_vampyrus,large flying fox,chiroptera,Pteropus vampyrus,132908.0,GCF_000151845.1_Pvam_2.0,94.0,91.5,97.4
+Tadarida_brasiliensis,Brazilian free-tailed bat,chiroptera,Tadarida brasiliensis,9438.0,GCA_004025005.1_TadBra_v1_BIUU,94.0,91.5,97.4
+Hipposideros_armiger,great roundleaf bat,chiroptera,Hipposideros armiger,186990.0,GCA_001890085.1_ASM189008v1,94.0,91.5,97.4
+Eidolon_helvum,straw-colored fruit bat,chiroptera,Eidolon helvum,77214.0,eidHel1,94.0,91.5,97.4
+Mormoops_blainvillei,Antillean ghost-faced bat,chiroptera,Mormoops blainvillei,118852.0,GCA_004026545.1_MorMeg_v1_BIUU,94.0,91.5,97.4
+Anoura_caudifer,tailed tailless bat,chiroptera,Anoura caudifer,27642.0,GCA_004027475.1_AnoCau_v1_BIUU,94.0,91.5,97.4
+Desmodus_rotundus,common vampire bat,chiroptera,Desmodus rotundus,9430.0,GCA_002940915.2_ASM294091v2,94.0,91.5,97.4
+Micronycteris_hirsuta,hairy big-eared bat,chiroptera,Micronycteris hirsuta,148065.0,GCA_004026765.1_MicHir_v1_BIUU,94.0,91.5,97.4
+Tonatia_saurophila,stripe-headed round-eared bat,chiroptera,Tonatia saurophila,171122.0,GCA_004024845.1_TonSau_v1_BIUU,94.0,91.5,97.4
+Carollia_perspicillata,Seba's short-tailed bat,chiroptera,Carollia perspicillata,40233.0,GCA_004027735.1_CarPer_v1_BIUU,94.0,91.5,97.4
+Artibeus_jamaicensis,Jamaican fruit-eating bat,chiroptera,Artibeus jamaicensis,9417.0,GCA_004027435.1_ArtJam_v1_BIUU,94.0,91.5,97.4
+Megaderma_lyra,Indian false vampire,chiroptera,Megaderma lyra,9413.0,GCA_004026885.1_MegLyr_v1_BIUU,94.0,91.5,97.4
+Miniopterus_schreibersii,Schreibers' long-fingered bat,chiroptera,Miniopterus schreibersii,9433.0,GCA_004026525.1_MinSch_v1_BIUU,94.0,91.5,97.4
+Noctilio_leporinus,greater bulldog bat,chiroptera,Noctilio leporinus,94963.0,GCA_004026585.1_NocLep_v1_BIUU,94.0,91.5,97.4
+Miniopterus_natalensis,Natal long-fingered bat,chiroptera,Miniopterus natalensis,291302.0,GCF_001595765.1_Mnat.v1,94.0,91.5,97.4
+Craseonycteris_thonglongyai,hog-nosed bat,chiroptera,Craseonycteris thonglongyai,208972.0,GCA_004027555.1_CraTho_v1_BIUU,94.0,91.5,97.4
+Pteronotus_parnellii,Parnell's mustached bat,chiroptera,Pteronotus parnellii,59476.0,ptePar1,94.0,91.5,97.4
+Myotis_myotis,greater mouse-eared bat,chiroptera,Myotis myotis,51298.0,GCA_004026985.1_MyoMyo_v1_BIUU,94.0,91.5,97.4
+Murina_feae,Ashy-gray tube-nosed bat,chiroptera,Murina feae (Murina aurata feae),1453894.0,GCA_004026665.1_MurFea_v1_BIUU,,,
+Myotis_davidii,David's myotis,chiroptera,Myotis davidii,225400.0,myoDav1,94.0,91.5,97.4
+Myotis_brandtii,Brandt's bat,chiroptera,Myotis brandtii,109478.0,myoBra1,94.0,91.5,97.4
+Eptesicus_fuscus,big brown bat,chiroptera,Eptesicus fuscus,29078.0,GCF_000308155.1_EptFus1.0,94.0,91.5,97.4
+Lasiurus_borealis,red bat,chiroptera,Lasiurus borealis,258930.0,GCA_004026805.1_LasBor_v1_BIUU,94.0,91.5,97.4
+Myotis_lucifugus,little brown bat,chiroptera,Myotis lucifugus,59463.0,myoLuc2,94.0,91.5,97.4
+Pipistrellus_pipistrellus,common pipistrelle,chiroptera,Pipistrellus pipistrellus,59474.0,GCA_004026625.1_PipPip_v1_BIUU,94.0,91.5,97.4
+Loxodonta_africana,African savanna elephant,afrotheria,Loxodonta africana,9785.0,GCA_000001905.1_Loxafr3.0,99.0,94.7,101.9
+Trichechus_manatus,Florida manatee,afrotheria,Trichechus manatus,9778.0,GCA_000243295.1_TriManLat1.0,99.0,94.7,101.9
+Heterohyrax_brucei,yellow-spotted hyrax,afrotheria,Heterohyrax brucei,77598.0,GCA_004026845.1_HetBruBak_v1_BIUU,99.0,94.7,101.9
+Procavia_capensis,Cape rock hyrax,afrotheria,Procavia capensis,9813.0,GCA_004026925.1_ProCapCap_v1_BIUU,99.0,94.7,101.9
+Orycteropus_afer,aardvark,afrotheria,Orycteropus afer,9818.0,,99.0,94.7,101.9
+Chrysochloris_asiatica,Cape golden mole,afrotheria,Chrysochloris asiatica,185453.0,GCA_004027935.1_ChrAsi_v1_BIUU,99.0,94.7,101.9
+Elephantulus_edwardii,Cape elephant shrew,afrotheria,Elephantulus edwardii,28737.0,eleEdw1,99.0,94.7,101.9
+Microgale_talazaci,Talazac's shrew tenrec,afrotheria,Microgale talazaci (Nesogale talazaci),2583312.0,GCA_004026705.1_MicTal_v1_BIUU,,,
+Echinops_telfairi,small Madagascar hedgehog,afrotheria,Echinops telfairi,9371.0,GCA_000313985.1_EchTel2.0,99.0,94.7,101.9
+Galeopterus_variegatus,Sunda flying lemur,euarchontoglires,Galeopterus variegatus,482537.0,GCA_004027255.1_GalVar_v1_BIUU,79.0,70.5,86.2
+Tupaia_chinensis,Chinese tree shrew,euarchontoglires,Tupaia chinensis,246437.0,tupChi1,85.0,74.6,86.5
+Xerus_inauris,South African ground squirrel,euarchontoglires,Xerus inauris,234690.0,GCA_004024805.1_XerIna_v1_BIUU,87.0,81.3,91.0
+Tupaia_tana,large tree shrew,euarchontoglires,Tupaia tana,70687.0,,85.0,74.6,86.5
+Aplodontia_rufa,mountain beaver,euarchontoglires,Aplodontia rufa,51342.0,GCA_004027875.1_AplRuf_v1_BIUU,87.0,81.3,91.0
+Marmota_marmota,Alpine marmot,euarchontoglires,Marmota marmota,9993.0,GCF_001458135.1_marMar2.1,87.0,81.3,91.0
+Spermophilus_dauricus,Daurian ground squirrel,euarchontoglires,Spermophilus dauricus,99837.0,GCA_002406435.1_ASM240643v1,87.0,81.3,91.0
+Hystrix_cristata,crested porcupine,euarchontoglires,Hystrix cristata,10137.0,GCA_004026905.1_HysCri_v1_BIUU,87.0,81.3,91.0
+Ictidomys_tridecemlineatus,thirteen-lined ground squirrel,euarchontoglires,Ictidomys tridecemlineatus,43179.0,speTri2,87.0,81.3,91.0
+Castor_canadensis,American beaver,euarchontoglires,Castor canadensis,51338.0,GCA_004027675.1_CasCan_v1_BIUU,87.0,81.3,91.0
+Chinchilla_lanigera,long-tailed chinchilla,euarchontoglires,Chinchilla lanigera,34839.0,chiLan1,87.0,81.3,91.0
+Dasyprocta_punctata,punctate agouti,euarchontoglires,Dasyprocta punctata,34846.0,,87.0,81.3,91.0
+Dinomys_branickii,pacarana,euarchontoglires,Dinomys branickii,108858.0,GCA_004027595.1_DinBra_v1_BIUU,87.0,81.3,91.0
+Glis_glis,fat dormouse,euarchontoglires,Glis glis,41261.0,GCA_004027185.1_GliGli_v1_BIUU,87.0,81.3,91.0
+Ctenodactylus_gundi,northern gundi,euarchontoglires,Ctenodactylus gundi,10166.0,GCA_004027205.1_CteGun_v1_BIUU,87.0,81.3,91.0
+Heterocephalus_glaber,naked mole-rat,euarchontoglires,Heterocephalus glaber,10181.0,GCA_000247695.1_HetGla_female_1.0,87.0,81.3,91.0
+Dolichotis_patagonum,Patagonian cavy,euarchontoglires,Dolichotis patagonum,29091.0,GCA_004027295.1_DolPat_v1_BIUU,87.0,81.3,91.0
+Hydrochoerus_hydrochaeris,capybara,euarchontoglires,Hydrochoerus hydrochaeris,10149.0,GCA_004027455.1_HydHyd_v1_BIUU,87.0,81.3,91.0
+Cavia_tschudii,Montane guinea pig,euarchontoglires,Cavia tschudii,143287.0,GCA_004027695.1_CavTsc_v1_BIUU,87.0,81.3,91.0
+Cavia_porcellus,domestic guinea pig,euarchontoglires,Cavia porcellus,10141.0,GCA_000151735.1_Cavpor3.0,87.0,81.3,91.0
+Octodon_degus,degu,euarchontoglires,Octodon degus,10160.0,GCA_000260255.1_OctDeg1.0,87.0,81.3,91.0
+Cuniculus_paca,lowland paca,euarchontoglires,Cuniculus paca,108852.0,,87.0,81.3,91.0
+Ctenomys_sociabilis,social tuco-tuco,euarchontoglires,Ctenomys sociabilis,43321.0,GCA_004027165.1_CteSoc_v1_BIUU,87.0,81.3,91.0
+Fukomys_damarensis,Damara mole-rat,euarchontoglires,Fukomys damarensis,885580.0,fukDam1,87.0,81.3,91.0
+Graphiurus_murinus,woodland dormouse,euarchontoglires,Graphiurus murinus,51346.0,,87.0,81.3,91.0
+Capromys_pilorides,Desmarest's hutia,euarchontoglires,Capromys pilorides,34842.0,GCA_004027915.1_CapPil_v1_BIUU,87.0,81.3,91.0
+Nannospalax_galili,Upper Galilee mountains blind mole rat,euarchontoglires,Nannospalax galili,1026970.0,GCA_000622305.1_S.galili_v1.0,87.0,81.3,91.0
+Myocastor_coypus,nutria,euarchontoglires,Myocastor coypus,10157.0,GCA_004027025.1_MyoCoy_v1_BIUU,87.0,81.3,91.0
+Muscardinus_avellanarius,hazel dormouse,euarchontoglires,Muscardinus avellanarius,39082.0,GCA_004027005.1_MusAve_v1_BIUU,87.0,81.3,91.0
+Petromus_typicus,dassie-rat,euarchontoglires,Petromus typicus,10183.0,GCA_004026965.1_PetTyp_v1_BIUU,87.0,81.3,91.0
+Thryonomys_swinderianus,greater cane rat,euarchontoglires,Thryonomys swinderianus,10169.0,GCA_004025085.1_ThrSwi_v1_BIUU,87.0,81.3,91.0
+Lepus_americanus,snowshoe hare,euarchontoglires,Lepus americanus,48086.0,GCA_004026855.1_LepAme_v1_BIUU,87.0,81.3,91.0
+Cricetomys_gambianus,Gambian giant pouched rat,euarchontoglires,Cricetomys gambianus,10085.0,GCA_004027575.1_CriGam_v1_BIUU,87.0,81.3,91.0
+Peromyscus_maniculatus,Prairie deer mouse,euarchontoglires,Peromyscus maniculatus,10042.0,GCF_000500345.1_Pman_1.0,87.0,81.3,91.0
+Onychomys_torridus,southern grasshopper mouse,euarchontoglires,Onychomys torridus,38674.0,GCA_004026725.1_OnyTor_v1_BIUU,87.0,81.3,91.0
+Oryctolagus_cuniculus,rabbit,euarchontoglires,Oryctolagus cuniculus,9986.0,GCA_000003625.1_OryCun2.0,87.0,81.3,91.0
+Ondatra_zibethicus,muskrat,euarchontoglires,Ondatra zibethicus,10060.0,GCA_004026605.1_OndZib_v1_BIUU,87.0,81.3,91.0
+Ellobius_talpinus,northern mole vole,euarchontoglires,Ellobius talpinus,329620.0,GCA_001685095.1_ETalpinus_0.1,87.0,81.3,91.0
+Meriones_unguiculatus,Mongolian gerbil,euarchontoglires,Meriones unguiculatus,10047.0,GCA_004026785.1_MerUng_v1_BIUU,87.0,81.3,91.0
+Psammomys_obesus,fat sand rat,euarchontoglires,Psammomys obesus,48139.0,GCA_002215935.1_ASM221593v1,87.0,81.3,91.0
+Mus_musculus,house mouse,euarchontoglires,Mus musculus,10090.0,mm10,87.0,81.3,91.0
+Cricetulus_griseus,Chinese hamster,euarchontoglires,Cricetulus griseus,10029.0,GCA_900186095.1_CHOK1S_HZDv1,87.0,81.3,91.0
+Rattus_norvegicus,Norway rat,euarchontoglires,Rattus norvegicus,10116.0,GCF_000001895.5_Rnor_6.0,87.0,81.3,91.0
+Mus_spretus,western wild mouse,euarchontoglires,Mus spretus,10096.0,GCA_001624865.1_SPRET_EiJ_v1,87.0,81.3,91.0
+Zapus_hudsonius,meadow jumping mouse,euarchontoglires,Zapus hudsonius,160400.0,GCA_004024765.1_ZapHud_v1_BIUU,87.0,81.3,91.0
+Microtus_ochrogaster,prairie vole,euarchontoglires,Microtus ochrogaster,79684.0,micOch1,87.0,81.3,91.0
+Mus_caroli,Ryukyu mouse,euarchontoglires,Mus caroli,10089.0,GCA_900094665.2_CAROLI_EIJ_v1.1,87.0,81.3,91.0
+Acomys_cahirinus,Egyptian spiny mouse,euarchontoglires,Acomys cahirinus,10068.0,GCA_004027535.1_AcoCah_v1_BIUU,87.0,81.3,91.0
+Allactaga_bullata,Gobi jerboa,euarchontoglires,Allactaga bullata (Orientallactaga bullata),1041416.0,GCA_004027895.1_AllBul_v1_BIUU,,,
+Mus_pahari,shrew mouse,euarchontoglires,Mus pahari,10093.0,GCF_900095145.1_PAHARI_EIJ_v1.1,87.0,81.3,91.0
+Ellobius_lutescens,Transcaucasian mole vole,euarchontoglires,Ellobius lutescens,39086.0,GCA_001685075.1_ASM168507v1,87.0,81.3,91.0
+Sigmodon_hispidus,hispid cotton rat,euarchontoglires,Sigmodon hispidus,42415.0,GCA_004025045.1_SigHis_v1_BIUU,87.0,81.3,91.0
+Jaculus_jaculus,lesser Egyptian jerboa,euarchontoglires,Jaculus jaculus,51337.0,GCA_000280705.1_JacJac1.0,87.0,81.3,91.0
+Cavia_aperea,Brazilian guinea pig,euarchontoglires,Cavia aperea,37548.0,cavApe1,87.0,81.3,91.0
+Mesocricetus_auratus,golden hamster,euarchontoglires,Mesocricetus auratus,10036.0,GCA_000349665.1_MesAur1.0,87.0,81.3,91.0
+Dipodomys_stephensi,Stephens's kangaroo rat,euarchontoglires,Dipodomys stephensi,323379.0,GCA_004024685.1_DipSte_v1_BIUU,87.0,81.3,91.0
+Ochotona_princeps,American pika,euarchontoglires,Ochotona princeps,9978.0,GCA_000292845.1_OchPri3.0,87.0,81.3,91.0
+Dipodomys_ordii,Ord's kangaroo rat,euarchontoglires,Dipodomys ordii,10020.0,dipOrd2,87.0,81.3,91.0
+Perognathus_longimembris,little pocket mouse,euarchontoglires,Perognathus longimembris,38669.0,,87.0,81.3,91.0
