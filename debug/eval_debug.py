@@ -9,7 +9,7 @@ from ma_mapper import utility, extract_maf
 #%% INPUT PARAMETERS
 target_species = 'Homo_sapiens'
 divergence_table_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/zoonomia_divergence_ref_table/species241_info.tsv'
-subfamily = 'MER11A'
+subfamily = 'THE1A'
 repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
 maf_dir = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/multi_species_multiple_alignment_maf/zoonomia_241_species'
 maf_file_prefix = '241-mammalian-2020v2b.maf'
@@ -147,7 +147,7 @@ def BLAST_StoP(alignment_score, m,n ,lambda_ ,K, H, alpha, beta, gapped):
     #p_value = 1 - math.exp(-E)
     return p_value, E
 #%% INITIATION
-subfamily='MER11A'
+subfamily='THE1C'
 subfamily_filename = subfamily.replace('/','_') 
 if internal_id_dir is None:
         internal_id_dir = '/'.join(str.split(repeatmasker_filepath, sep ='/')[:-1])
@@ -163,7 +163,7 @@ divergence_table=utility.divergence_table_prep(divergence_table_filepath)
 #internal_id_tbl['meta_id'] = subfamily + '_' + internal_id_tbl.index.astype(str)
 #internal_id = internal_id_tbl[internal_id_tbl.meta_id == meta_id]['internal_id'].values[0]
 #%%
-internal_id = 'MER11A_SINGLE_4'
+internal_id = 'THE1A_SINGLE_3164'
 internal_id_tbl_subset = internal_id_tbl[internal_id_tbl.internal_id == internal_id]
 subset_index=internal_id_tbl_subset.rmsk_index.to_list()
 rmsk_subset=repeatmasker_table[repeatmasker_table.index.isin(subset_index)]
