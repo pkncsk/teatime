@@ -1,0 +1,6 @@
+Category	Before (rows)	Before (%)	After (rows)	After (%)	Δ Rows	Δ %
+Single LTRs	6643	67.86	6643	67.86	0	0.00
+LTR Pairs	3146	32.14	3146	32.14	0	0.00
+LTR Pairs - Match	2693	27.51	3127	31.94	434	4.43
+LTR Pairs - Mismatch	453	4.63	19	0.19	-434	-4.43
+Total rows	9789	100.00	9789	100.00	0	0.00

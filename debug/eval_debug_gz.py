@@ -45,12 +45,11 @@ maf_filepath = f'{maf_dir}/{maf_file_prefix}.{chrom}.gz'
 # %%
 E_table = e_value_calculation.e_val_engine_full(chrom, strand, start_flanked, end_flanked,maf_filepath, e_cutoff=1e-3, target_species=target_species)
 # %% test e_val_engine_full part1
-from ma_mapper import mafio_patch
+from ma_mapper import gzmaf
 target_chrom = f'{target_species}.{chrom}'
-mafindex_filedir = '.'.join(str.split(maf_filepath, sep ='.')[:-1])
-mafindex_filepath = f'{mafindex_filedir}.mafindex'
+mafindex_filepath = f'{maf_dir}/{maf_file_prefix}.{chrom}.mafindex'
 #print(mafindex_filepath)
-index_maf = mafio_patch.gzMafIndex(mafindex_filepath, maf_filepath, target_chrom)
+index_maf = gzmaf.gzMafIndex(mafindex_filepath, maf_filepath, target_chrom)
 #%%
 print(start_list, end_list, strand)
 spliced_maf_full =index_maf.get_spliced(start_list,end_list,strand)

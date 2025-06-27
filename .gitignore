@@ -1,0 +1,16 @@
+##################################
+
+/debug/unequal_ltr_par_img/*
+/debug/unequal_ltr_par_img_extend/*
+*.png
+*.txt
+*.html
+*.fasta
+*.aligned
+*.tree
+*.log
+*.maf
+*.mafindex
+*.fa
+*.svg
+*.jpeg
