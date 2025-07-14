@@ -10,16 +10,7 @@ from concurrent.futures import ProcessPoolExecutor
 from Bio.Seq import Seq
 from collections import Counter, defaultdict
 from bisect import bisect_left, bisect_right
-import argparse
 #%%
-def repeatmasker_prep(repeatmasker_filepath):
-    rmskout_table=pd.read_csv(repeatmasker_filepath, sep='\t', index_col = 0, header = 0)
-    #filter table
-    main_chr = ['chr1','chr2','chr3','chr4','chr5','chr6','chr7','chr8','chr9','chr10','chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20','chr21','chr22','chrX','chrY']
-    discard_class = ['Simple_repeat', 'Satellite/telo','Low_complexity','snRNA','tRNA','Satellite','srpRNA', 'rRNA', 'scRNA', 'RNA', 'Satellite/centr', 'Satellite/acro',    'LTR/ERVL?','LTR/ERV1?','LTR?','LTR/Gypsy?','DNA/hAT?','RC?/Helitron?','DNA?/hAT-Tip100?','DNA?/PiggyBac?','SINE?/tRNA']
-    filtered_table=rmskout_table[(~rmskout_table['repClass'].isin(discard_class)) & (rmskout_table['genoName'].isin(main_chr))]
-    return filtered_table
-
 def divergence_table_prep(divergence_table_filepath):
     species = pd.read_table(divergence_table_filepath, sep='\t')
     species['meta_name']=species['track_name']
@@ -297,23 +288,6 @@ def get_spliced_mod(self, starts, ends, strand=1):
     return df
 
 MafIO.MafIndex.get_spliced = get_spliced_mod
-#%%
-def get_maf_filepath(maf_dir, chrom):
-    files = os.listdir(maf_dir)
-    maf_filename = f"{chrom}.maf" 
-    maf_files = [f for f in files if f.endswith(maf_filename)]
-
-    # Determine the appropriate file to use
-    maf_filepath = None
-    if any(f.endswith('.maf') for f in maf_files):
-        maf_filepath = f"{maf_dir}/{maf_filename}" #.maf is more optimal performance wise 
-    elif any(f.endswith('.maf.gz') for f in maf_files):
-        maf_filepath = f"{maf_dir}/{maf_filename}.gz" 
-    else:
-        raise FileNotFoundError(f"No .maf or .maf.gz file found for chromosome {chrom} in {maf_dir}")
-
-    return maf_filepath
-#%%
 def affine_count_simple(str1,str2,
     matchWeight = 1,
     mismatchWeight = 1,
@@ -523,8 +497,8 @@ def calculate_metrics(row, extension_length):
         'E_value': E_score,
         'pct_iden_front': iden_front,
         'pct_gap_front':pgap_front,
-        'E_val_front':E_score_front,
         'pct_iden_back': iden_back,
+        'E_val_front':E_score_front,
         'pct_gap_back':pgap_back,
         'E_val_back': E_score_back
     })
@@ -535,287 +509,235 @@ def string_to_float_list(val):
     return []
 
 #%%
-def string_to_list(s):
-    try:
-        return [int(x) for x in re.findall(r'\d+', s)]
-    except (ValueError, TypeError):
-        print(f"Warning: Could not parse {s}")
-        return None
+e_val_path = '/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/data/output/teatime447/e_value_simple/final_LTR_sample_3000.e_table.txt'
+e_df=pd.read_csv(e_val_path, sep='\t')
+#%%
+grouped =e_df.groupby('internal_id', sort=False)
+        # Create a list to store the smaller DataFrames
+e_val_table_by_id = [group for _, group in grouped]
 
-def filter_e2(e_table,
-              internal_id_dir,
-              maf_dir,
-              subfamily,
-              additional_evalue_cutoff,
-              target_species,
-              extension_length,
-              e_cutoff, 
-              ):
-    te_age = 0
-    segmental = pd.DataFrame()
-    unclassified = pd.DataFrame()
-    nosig_match = pd.DataFrame()
-    internal_id = e_table.internal_id.unique()[0]
-    print(internal_id)#debug
+e_table = e_val_table_by_id[0]
+
+additional_evalue_cutoff=1e-6
+if e_table.shape[0] > 1:
+    #test second pass
+    if additional_evalue_cutoff is not None:
+        e_table=e_table[e_table.E_value.astype('float64')<=additional_evalue_cutoff].copy()
+    #Convert the strings in 'E_val_flanks' to lists
+
+
+#%%
+# Example variable name for your list of dfs
+df_list = e_val_table_by_id  # your list of dataframes
+
+target_id = "THE1A_4179151_aINT_singleton_1"
+
+for i, df in enumerate(df_list):
+    # Check if 'internal_id' column contains target_id
+    if target_id in df['internal_id'].values:
+        # Extract rows matching the target_id
+        matched_rows = df[df['internal_id'] == target_id]
+        print(f"Found in DataFrame index {i}:")
+        print(matched_rows)
+        # If you want to stop at first find, uncomment next line
+        # break
+
+#%%
+e_cutoff=1e-3
+
+
+#%%
+additional_evalue_cutoff=1e-3
+e_cutoff=1e-3
+for id_num, e_table in enumerate(e_val_table_by_id):
     if e_table.shape[0] > 1:
+    #test second pass
         if additional_evalue_cutoff is not None:
             e_table=e_table[e_table.E_value.astype('float64')<=additional_evalue_cutoff].copy()
-
         second_pass_tbl=e_table[(e_table['E_val_front'] <= e_cutoff) | (e_table['E_val_back'] <= e_cutoff)]
         if second_pass_tbl.shape[0] > 1:
-            te_age=second_pass_tbl.divergence.max()
-    
-    if e_table.shape[0] == 1:
-        subfamily_filename = subfamily.replace('/','_') 
-        input_filepath = f'{internal_id_dir}/{subfamily_filename}.internal_id.txt'
-        internal_id_tbl = pd.read_csv(input_filepath, sep='\t')
-        internal_id=e_table['internal_id'].unique()[0]
-        internal_id_tbl_subset = internal_id_tbl[internal_id_tbl.internal_id == internal_id]
-        subset_index=internal_id_tbl_subset.rmsk_index.to_list()
-        rmsk_subset=repeatmasker_table[repeatmasker_table.index.isin(subset_index)]
-        chrom=rmsk_subset.genoName.unique()[0]
-        strand=rmsk_subset.strand.unique()[0]
-        if strand =='-':
-            internal_id_tbl_subset  = internal_id_tbl_subset.sort_index(ascending=False)
-        start_list=rmsk_subset.genoStart.to_list()
-        end_list=rmsk_subset.genoEnd.to_list()
-        if strand=='-':
-            strand = -1
-        else:
-            strand = 1
-        maf_filepath = get_maf_filepath(maf_dir, chrom)
+            te_age=second_pass_tbl['divergence'].max()
+    else:
+        te_age = e_table['divergence'].max()
+    if te_age==0:
+        print(id_num, te_age)
+#%%
+def repeatmasker_prep(repeatmasker_filepath):
+    rmskout_table=pd.read_csv(repeatmasker_filepath, sep='\t', index_col = 0, header = 0)
+    #filter table
+    main_chr = ['chr1','chr2','chr3','chr4','chr5','chr6','chr7','chr8','chr9','chr10','chr11','chr12','chr13','chr14','chr15','chr16','chr17','chr18','chr19','chr20','chr21','chr22','chrX','chrY']
+    discard_class = ['Simple_repeat', 'Satellite/telo','Low_complexity','snRNA','tRNA','Satellite','srpRNA', 'rRNA', 'scRNA', 'RNA', 'Satellite/centr', 'Satellite/acro',    'LTR/ERVL?','LTR/ERV1?','LTR?','LTR/Gypsy?','DNA/hAT?','RC?/Helitron?','DNA?/hAT-Tip100?','DNA?/PiggyBac?','SINE?/tRNA']
+    filtered_table=rmskout_table[(~rmskout_table['repClass'].isin(discard_class)) & (rmskout_table['genoName'].isin(main_chr))]
+    return filtered_table
+e_table=e_val_table_by_id[1547]
+subfamily = 'final_LTR_sample_3000'
+internal_id_dir='/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/evalutation/'
+repeatmasker_path = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
+repeatmasker_table=repeatmasker_prep(repeatmasker_path)
+def get_maf_filepath(maf_dir, chrom):
+    files = os.listdir(maf_dir)
+    maf_filename = f"{chrom}.maf" 
+    maf_files = [f for f in files if f.endswith(maf_filename)]
 
-        target_chrom = f'{target_species}.{chrom}'
-        mafindex_filedir = '.'.join(str.split(maf_filepath, sep ='.')[:-1])
-        mafindex_filepath = f'{mafindex_filedir}.mafindex'
+    # Determine the appropriate file to use
+    maf_filepath = None
+    if any(f.endswith('.maf') for f in maf_files):
+        maf_filepath = f"{maf_dir}/{maf_filename}" #.maf is more optimal performance wise 
+    elif any(f.endswith('.maf.gz') for f in maf_files):
+        maf_filepath = f"{maf_dir}/{maf_filename}.gz" 
+    else:
+        raise FileNotFoundError(f"No .maf or .maf.gz file found for chromosome {chrom} in {maf_dir}")
 
-        if '.gz' in mafindex_filepath:
-            index_maf = mafio_patch.gzMafIndex(mafindex_filepath, maf_filepath, target_chrom)
-        else:
-            index_maf = MafIO.MafIndex(mafindex_filepath, maf_filepath, target_chrom)
-        start_flanked=[min(start_list)-extension_length] + start_list + [max(end_list)]
-        end_flanked = [min(start_list)] + end_list + [max(end_list)+extension_length]
-        spliced_maf_full =index_maf.get_spliced(start_flanked,end_flanked,strand)
-        
-        if all(base == 'N' for base in spliced_maf_full['seq'].values[0]):
-            unclassified = e_table
-            te_age = np.nan
-            return internal_id, te_age, segmental, unclassified, nosig_match
+    return maf_filepath
+maf_dir= '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/multi_species_multiple_alignment_maf/cactus447/'
+#%%
+subfamily_filename = subfamily.replace('/','_') 
+input_filepath = f'{internal_id_dir}/{subfamily_filename}.internal_id.txt'
+internal_id_tbl = pd.read_csv(input_filepath, sep='\t')
+internal_id=e_table['internal_id'].unique()[0]
+internal_id_tbl_subset = internal_id_tbl[internal_id_tbl.internal_id == internal_id]
+subset_index=internal_id_tbl_subset.rmsk_index.to_list()
+rmsk_subset=repeatmasker_table[repeatmasker_table.index.isin(subset_index)]
+chrom=rmsk_subset.genoName.unique()[0]
+strand=rmsk_subset.strand.unique()[0]
+if strand =='-':
+    internal_id_tbl_subset  = internal_id_tbl_subset.sort_index(ascending=False)
+start_list=rmsk_subset.genoStart.to_list()
+end_list=rmsk_subset.genoEnd.to_list()
+if strand=='-':
+    strand = -1
+else:
+    strand = 1
+maf_filepath = get_maf_filepath(maf_dir, chrom)
+# %%
+target_species = 'hg38'
+extension_length = 5000
+target_chrom = f'{target_species}.{chrom}'
+mafindex_filedir = '.'.join(str.split(maf_filepath, sep ='.')[:-1])
+mafindex_filepath = f'{mafindex_filedir}.mafindex'
+index_maf = MafIO.MafIndex(mafindex_filepath, maf_filepath, target_chrom)
+start_flanked=[min(start_list)-extension_length] + start_list + [max(end_list)]
+end_flanked = [min(start_list)] + end_list + [max(end_list)+extension_length]
+spliced_maf_full =index_maf.get_spliced(start_flanked,end_flanked,strand)
 
-        target_seq = np.char.upper(spliced_maf_full[spliced_maf_full.seqid.str.contains(target_species)]['seq'].to_list())[0]
-        spliced_maf_full[['alignment_score', 'matched', 'gapped', 'gap_count']] = spliced_maf_full.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][extension_length:-extension_length]), target_seq[extension_length:-extension_length]), axis=1)
-        spliced_maf_full[['meta_name', 'chr_code']] = spliced_maf_full['seqid'].str.split('.', n=1, expand=True)
-        spliced_maf_age=spliced_maf_full.merge(external_data_table[['meta_name','ungapped_length','divergence']], how='left',on='meta_name')
-        spliced_maf_age['seq_length'] = spliced_maf_full['seq'].apply(len) -2*extension_length
-        lambda_ = 1.08;K = 0.28;H = 0.54;alpha = 2.0;beta = -2
-        spliced_maf_age[['p_value', 'E_value']] = spliced_maf_age.apply(lambda row: pd.Series(BLAST_StoP(
-                alignment_score=row['alignment_score'],
-                m=row['seq_length'],
-                n=row['ungapped_length'],
-                lambda_=lambda_,
-                K=K,
-                H=H,
-                alpha=alpha,
-                beta=beta,
-                gapped=row['gapped']
-            )), axis=1)
-        
-        flanked_tbl = spliced_maf_age.copy()
-        flanked_tbl[['alignment_score_front', 'matched_front', 'gapped_front', 'gap_count_front']] = flanked_tbl.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][:extension_length]), target_seq[:extension_length]), axis=1)
-        flanked_tbl[['p_value_front', 'E_value_front']] = flanked_tbl.apply(lambda row: pd.Series(BLAST_StoP(
-            alignment_score=row['alignment_score_front'],
-            m=extension_length,
-            n=row['ungapped_length'],
-            lambda_=lambda_,
-            K=K,
-            H=H,
-            alpha=alpha,
-            beta=beta,
-            gapped=row['gapped_front']
-        )), axis=1)
-        flanked_tbl[['alignment_score_back', 'matched_back', 'gapped_back', 'gap_count_back']] = flanked_tbl.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][-extension_length:]), target_seq[-extension_length:]), axis=1)
-        flanked_tbl[['p_value_back', 'E_value_back']] = flanked_tbl.apply(lambda row: pd.Series(BLAST_StoP(
-            alignment_score=row['alignment_score_back'],
-            m=extension_length,
-            n=row['ungapped_length'],
-            lambda_=lambda_,
-            K=K,
-            H=H,
-            alpha=alpha,
-            beta=beta,
-            gapped=row['gapped_back']
-        )), axis=1)
-                # Add columns to determine match types
-        flanked_tbl['match_front'] = flanked_tbl['E_value_front'] <= e_cutoff
-        flanked_tbl['match_back'] = flanked_tbl['E_value_back'] <= e_cutoff
+target_seq = np.char.upper(spliced_maf_full[spliced_maf_full.seqid.str.contains(target_species)]['seq'].to_list())[0]
+# %%
+external_data_table_filepath='/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/data/resource/zoonomia_divergence_ref_table/species447_info_c.txt'
+external_data_table=divergence_table_prep(external_data_table_filepath)
 
-        # Create additional columns for summary
-        flanked_tbl['front_only'] = flanked_tbl['match_front'] & ~flanked_tbl['match_back']
-        flanked_tbl['back_only'] = ~flanked_tbl['match_front'] & flanked_tbl['match_back']
-        flanked_tbl['both'] = flanked_tbl['match_front'] & flanked_tbl['match_back']
-        flanked_tbl['nonmatch'] = ~flanked_tbl['match_front'] & ~flanked_tbl['match_back']
+spliced_maf_full[['alignment_score', 'matched', 'gapped', 'gap_count']] = spliced_maf_full.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][extension_length:-extension_length]), target_seq[extension_length:-extension_length]), axis=1)
+spliced_maf_full[['meta_name', 'chr_code']] = spliced_maf_full['seqid'].str.split('.', n=1, expand=True)
+spliced_maf_age=spliced_maf_full.merge(external_data_table[['meta_name','ungapped_length','divergence']], how='left',on='meta_name')
+spliced_maf_age['seq_length'] = spliced_maf_full['seq'].apply(len) -2*extension_length
+lambda_ = 1.08;K = 0.28;H = 0.54;alpha = 2.0;beta = -2
+spliced_maf_age[['p_value', 'E_value']] = spliced_maf_age.apply(lambda row: pd.Series(BLAST_StoP(
+    alignment_score=row['alignment_score'],
+    m=row['seq_length'],
+    n=row['ungapped_length'],
+    lambda_=lambda_,
+    K=K,
+    H=H,
+    alpha=alpha,
+    beta=beta,
+    gapped=row['gapped']
+)), axis=1)
+first_pass = spliced_maf_age[spliced_maf_age['E_value']<=e_cutoff].copy()
+# %%
+first_pass[['alignment_score_front', 'matched_front', 'gapped_front', 'gap_count_front']] = first_pass.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][:extension_length]), target_seq[:extension_length]), axis=1)
+first_pass[['p_value_front', 'E_value_front']] = first_pass.apply(lambda row: pd.Series(BLAST_StoP(
+    alignment_score=row['alignment_score_front'],
+    m=extension_length,
+    n=row['ungapped_length'],
+    lambda_=lambda_,
+    K=K,
+    H=H,
+    alpha=alpha,
+    beta=beta,
+    gapped=row['gapped_front']
+)), axis=1)
+first_pass[['alignment_score_back', 'matched_back', 'gapped_back', 'gap_count_back']] = first_pass.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][-extension_length:]), target_seq[-extension_length:]), axis=1)
+first_pass[['p_value_back', 'E_value_back']] = first_pass.apply(lambda row: pd.Series(BLAST_StoP(
+    alignment_score=row['alignment_score_back'],
+    m=extension_length,
+    n=row['ungapped_length'],
+    lambda_=lambda_,
+    K=K,
+    H=H,
+    alpha=alpha,
+    beta=beta,
+    gapped=row['gapped_back']
+)), axis=1)
+#%%
+second_pass=first_pass[(first_pass['E_value_front']<=e_cutoff)|(first_pass['E_value_back']<=e_cutoff)].copy()
+e_table = second_pass.apply(lambda row: calculate_metrics(row, extension_length), axis=1).sort_values('divergence',ascending =True)
+#%%
+flanked_tbl = spliced_maf_age.copy()
+flanked_tbl[['alignment_score_front', 'matched_front', 'gapped_front', 'gap_count_front']] = flanked_tbl.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][:extension_length]), target_seq[:extension_length]), axis=1)
+flanked_tbl[['p_value_front', 'E_value_front']] = flanked_tbl.apply(lambda row: pd.Series(BLAST_StoP(
+    alignment_score=row['alignment_score_front'],
+    m=extension_length,
+    n=row['ungapped_length'],
+    lambda_=lambda_,
+    K=K,
+    H=H,
+    alpha=alpha,
+    beta=beta,
+    gapped=row['gapped_front']
+)), axis=1)
+flanked_tbl[['alignment_score_back', 'matched_back', 'gapped_back', 'gap_count_back']] = flanked_tbl.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][-extension_length:]), target_seq[-extension_length:]), axis=1)
+flanked_tbl[['p_value_back', 'E_value_back']] = flanked_tbl.apply(lambda row: pd.Series(BLAST_StoP(
+    alignment_score=row['alignment_score_back'],
+    m=extension_length,
+    n=row['ungapped_length'],
+    lambda_=lambda_,
+    K=K,
+    H=H,
+    alpha=alpha,
+    beta=beta,
+    gapped=row['gapped_back']
+)), axis=1)
+# Add columns to determine match types
+flanked_tbl['match_front'] = flanked_tbl['E_value_front'] <= e_cutoff
+flanked_tbl['match_back'] = flanked_tbl['E_value_back'] <= e_cutoff
 
-        summary = {
-            'total_count': len(flanked_tbl),
-            'match_count': int(flanked_tbl['match_front'].sum() + flanked_tbl['match_back'].sum() -  flanked_tbl['both'].sum()),
-            'front_only_count': int(flanked_tbl['front_only'].sum()),
-            'back_only_count': int(flanked_tbl['back_only'].sum()),
-            'both_count': int(flanked_tbl['both'].sum()),
-            'nonmatch_count': int(flanked_tbl['nonmatch'].sum())
-                        }
-        updated_e_table = e_table.assign(**summary)
+# Create additional columns for summary
+flanked_tbl['front_only'] = flanked_tbl['match_front'] & ~flanked_tbl['match_back']
+flanked_tbl['back_only'] = ~flanked_tbl['match_front'] & flanked_tbl['match_back']
+flanked_tbl['both'] = flanked_tbl['match_front'] & flanked_tbl['match_back']
+flanked_tbl['nonmatch'] = ~flanked_tbl['match_front'] & ~flanked_tbl['match_back']
 
-        if updated_e_table['match_count'].values[0] > 1:
+# Summarize the counts
+summary = {
+    'total_count': len(flanked_tbl),
+    'match_count': int(flanked_tbl['match_front'].sum() + flanked_tbl['match_back'].sum() -  flanked_tbl['both'].sum()),
+    'front_only_count': int(flanked_tbl['front_only'].sum()),
+    'back_only_count': int(flanked_tbl['back_only'].sum()),
+    'both_count': int(flanked_tbl['both'].sum()),
+    'nonmatch_count': int(flanked_tbl['nonmatch'].sum())
+                }
+
+# %%
+e_table = e_table[['chr_code','divergence','pct_iden','pct_gap','BLAST','E_value','%iden_flanks','total_count','match_count','front_only_count','back_only_count','both_count','nonmatch_count']]
+# %%
+
+# %%
+updated_e_table = e_table.assign(**summary)
+# %%
+e_table['match_count']
+# %%
+if updated_e_table['match_count'].values[0] > 1:
             te_age = 0
             nosig_match = updated_e_table
-        elif updated_e_table['match_count'].values[0] == 1:
-            te_age = np.nan
-            segmental = updated_e_table
-        else:
-            te_age = np.nan
-            unclassified = updated_e_table
-    
-    return internal_id, te_age, segmental, unclassified, nosig_match
-
-def filter_e_for_age(subfamily, 
-                     internal_id_dir,
-                     age_table_dir,
-                     e_table_dir,
-                     maf_dir,
-                     additional_evalue_cutoff,
-                     target_species,
-                     extension_length,
-                     e_cutoff):
-    e_table = pd.read_csv(f'{e_table_dir}/{subfamily}.e_table.txt',sep = '\t', low_memory=False)
-    output_filepath = f'{age_table_dir}/{subfamily}.teatime.txt'
-    if (os.path.isfile(output_filepath) == False):
-        print('start',subfamily)
-        grouped =e_table.groupby('internal_id', sort=False)
-        # Create a list to store the smaller DataFrames
-        e_val_table_by_id = [group for _, group in grouped]
-       
-        with ProcessPoolExecutor(max_workers=1) as executor:
-            results = executor.map(filter_e2, 
-                                   e_val_table_by_id,
-                                   repeat(internal_id_dir), 
-                                   repeat(maf_dir),
-                                   repeat(subfamily),
-                                   repeat(additional_evalue_cutoff),
-                                   repeat(target_species), 
-                                   repeat(extension_length),
-                                   repeat(e_cutoff))           
-
-        id_list = []
-        age_list = []
-        nosig_match = []
-        segmental = []
-        unclassified = []
-        for idx, result in enumerate(results):
-            id_list.append(result[0])
-            age_list.append(result[1])
-            segmental.append(result[2])
-            unclassified.append(result[3])
-            nosig_match.append(result[4])
-        dict_prep = {'internal_id': id_list, 'te_age':age_list,}
-        output_table=pd.DataFrame(dict_prep)
-        output_table.to_csv(output_filepath, sep='\t', index=False)
-
-        nosig_match_df=pd.concat(nosig_match)
-        if nosig_match_df.shape[0] > 0:
-            nosig_filepath=f'{age_table_dir}/{subfamily}.insertion.txt'
-            nosig_match_df.to_csv(nosig_filepath, sep='\t', index=False)
-    
-        segmental_df=pd.concat(segmental)
-        if segmental_df.shape[0] > 0:
-            segmental_filepath=f'{age_table_dir}/{subfamily}.segmental.txt'
-            segmental_df.to_csv(segmental_filepath, sep='\t', index=False)
-    
-        unclassified_df=pd.concat(unclassified)
-        if unclassified_df.shape[0] > 0:
-            unclassified_filepath=f'{age_table_dir}/{subfamily}.unclassified.txt'
-            unclassified_df.to_csv(unclassified_filepath, sep='\t', index=False)
-        
-        print('done',subfamily)
-    else:
-        print('already done', subfamily)
+            print('check1')
+elif updated_e_table['match_count'].values[0] == 1:
+    te_age = np.nan
+    segmental = updated_e_table
+    print('check2')
+else:
+    te_age = np.nan
+    unclassified = updated_e_table
+    print('check3')
 # %%
-def main(internal_id_dir,
-         e_table_dir,
-         subfamily_list,
-         repeatmasker_filepath,
-         maf_dir, 
-         external_data_table_filepath, 
-         age_table_dir,
-         additional_evalue_cutoff,
-         target_species, 
-         extension_length, 
-         e_value_cutoff
-         ):
-    global repeatmasker_table, external_data_table
-    repeatmasker_table = repeatmasker_prep(repeatmasker_filepath)
-    external_data_table=divergence_table_prep(external_data_table_filepath)
-    if subfamily_list is None:
-        repname_counts = repeatmasker_table['repName'].value_counts().reset_index()
-        repname_counts.columns = ['repName', 'count']
-        subfamily_list=repname_counts[repname_counts['count']<1000]['repName'].unique()
-    for subfamily in subfamily_list:
-        filter_e_for_age(
-            subfamily=subfamily,
-            internal_id_dir=internal_id_dir,
-            age_table_dir=age_table_dir, 
-            e_table_dir=e_table_dir,
-            maf_dir=maf_dir,
-            additional_evalue_cutoff=additional_evalue_cutoff,
-            target_species=target_species, 
-            extension_length=extension_length,
-            e_cutoff=e_value_cutoff)
+if all(base == 'N' for base in spliced_maf_full['seq'].values[0]):
+    print('test')
 # %%
-if __name__ == '__main__':
-    parser = argparse.ArgumentParser(
-        description="Assign TE ages using internal IDs and E-values.")
-    parser.add_argument('-d', '--internal_id_dir', required=True,
-                        help="Directory containing internal ID tables")
-    parser.add_argument('-e', '--e_table_dir', required=True,
-                        help="Directory containing E-value tables")
-    parser.add_argument('-r', '--repeatmasker', required=True,
-                        help="Path to RepeatMasker output file (.tsv) with modified headers compatible with pandas.read_csv()")
-    parser.add_argument('-m', '--maf_dir', required=True,
-                        help="Directory containing multispecies alignment (MAF) files")
-    parser.add_argument('-x', '--external_data_table', required=True,
-                        help="Path to external data table containing genome ID, species divergence, and aligned genome size")
-    parser.add_argument('-t', '--target_species', default='hg38',
-                        help="Target/reference genome ID (default: hg38)")
-    parser.add_argument('-l', '--extension_length', type=int, default=5000,
-                        help="Length of flanking sequence to extract (default: 5000 bp)")
-    parser.add_argument('-c', '--e_value_cutoff', type=float, default=1e-3,
-                        help="E-value threshold for 0 MYA region filtering (default: 1e-3)")
-    parser.add_argument('-a', '--additional_evalue_cutoff', type=float, default=None,
-                        help="Optional second E-value cutoff for more stringent filtering")
-    parser.add_argument('-o', '--output', required=True,
-                        help="Output directory for TE age tables")
-    parser.add_argument('-s', '--subfamily_list', nargs='+', default=None,
-                        help="List of subfamily names to process (optional). If not given, the script will run through all subfamilies available on the RepeatMasker output table")
-    parser.add_argument("-S", "--subfamily_file",  type=str,
-                        help="Optional path to a text file with a list of subfamilies (one per line).")
-    args = parser.parse_args()
-    subfamily_list = None
-    if args.subfamily_list:
-        subfamily_list = args.subfamily_list
-    elif args.subfamily_file:
-        with open(args.subfamily_file) as f:
-            subfamily_list = [line.strip() for line in f if line.strip()]
-    main(
-        internal_id_dir=args.internal_id_dir,
-        e_table_dir=args.e_table_dir,
-        subfamily_list=subfamily_list,
-        repeatmasker_filepath=args.repeatmasker,
-        maf_dir=args.maf_dir,
-        external_data_table_filepath=args.external_data_table,
-        age_table_dir=args.output,
-        additional_evalue_cutoff=args.additional_evalue_cutoff,
-        target_species=args.target_species,
-        extension_length=args.extension_length,
-        e_value_cutoff=args.e_value_cutoff
-    )
-#%%
-#%%

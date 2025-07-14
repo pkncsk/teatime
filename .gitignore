@@ -2,6 +2,7 @@
 
 /debug/unequal_ltr_par_img/*
 /debug/unequal_ltr_par_img_extend/*
+/debug/
 *.png
 *.txt
 *.html

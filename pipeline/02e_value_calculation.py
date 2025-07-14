@@ -518,13 +518,16 @@ def calculate_metrics(row, extension_length):
         'species':  row['meta_name'],
         'chr_code': row['chr_code'],
         'divergence': row['divergence'],
-        '%iden': iden,
-        '%gap': pgap,
+        'pct_iden': iden,
+        'pct_gap': pgap,
         'blast': row['alignment_score'],
         'E_value': E_score,
-        '%iden_flanks': [iden_front, iden_back],
-        '%gap_flanks': [pgap_front, pgap_back],
-        'E_val_flanks': [E_score_front, E_score_back]
+        'pct_iden_front': iden_front,
+        'pct_gap_front':pgap_front,
+        'E_val_front':E_score_front,
+        'pct_iden_back': iden_back,
+        'pct_gap_back':pgap_back,
+        'E_val_back': E_score_back
     })
 
 #%%
@@ -605,60 +608,7 @@ def e_val_engine_full(chrom,
             else:
                 second_pass=first_pass[(first_pass['E_value_front']<=e_cutoff)|(first_pass['E_value_back']<=e_cutoff)].copy()
                 e_table = second_pass.apply(lambda row: calculate_metrics(row, extension_length), axis=1).sort_values('divergence',ascending =True)
-                if second_pass.shape[0] >1:
-                    return e_table
-                else:
-                    flanked_tbl = spliced_maf_age.copy()
-                    flanked_tbl[['alignment_score_front', 'matched_front', 'gapped_front', 'gap_count_front']] = flanked_tbl.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][:extension_length]), target_seq[:extension_length]), axis=1)
-                    flanked_tbl[['p_value_front', 'E_value_front']] = flanked_tbl.apply(lambda row: pd.Series(BLAST_StoP(
-                        alignment_score=row['alignment_score_front'],
-                        m=extension_length,
-                        n=row['ungapped_length'],
-                        lambda_=lambda_,
-                        K=K,
-                        H=H,
-                        alpha=alpha,
-                        beta=beta,
-                        gapped=row['gapped_front']
-                    )), axis=1)
-                    flanked_tbl[['alignment_score_back', 'matched_back', 'gapped_back', 'gap_count_back']] = flanked_tbl.apply(lambda row: affine_count_simple_optimized(np.array(row['seq'][-extension_length:]), target_seq[-extension_length:]), axis=1)
-                    flanked_tbl[['p_value_back', 'E_value_back']] = flanked_tbl.apply(lambda row: pd.Series(BLAST_StoP(
-                        alignment_score=row['alignment_score_back'],
-                        m=extension_length,
-                        n=row['ungapped_length'],
-                        lambda_=lambda_,
-                        K=K,
-                        H=H,
-                        alpha=alpha,
-                        beta=beta,
-                        gapped=row['gapped_back']
-                    )), axis=1)
-                    # Add columns to determine match types
-                    flanked_tbl['match_front'] = flanked_tbl['E_value_front'] <= e_cutoff
-                    flanked_tbl['match_back'] = flanked_tbl['E_value_back'] <= e_cutoff
-
-                    # Create additional columns for summary
-                    flanked_tbl['front_only'] = flanked_tbl['match_front'] & ~flanked_tbl['match_back']
-                    flanked_tbl['back_only'] = ~flanked_tbl['match_front'] & flanked_tbl['match_back']
-                    flanked_tbl['both'] = flanked_tbl['match_front'] & flanked_tbl['match_back']
-                    flanked_tbl['nonmatch'] = ~flanked_tbl['match_front'] & ~flanked_tbl['match_back']
-
-                    # Summarize the counts
-                    summary = {
-                        'total_count': len(flanked_tbl),
-                        'match_count': flanked_tbl['match_front'].sum() + flanked_tbl['match_back'].sum() -  flanked_tbl['both'].sum(),
-                        'front_only_count': flanked_tbl['front_only'].sum(),
-                        'back_only_count': flanked_tbl['back_only'].sum(),
-                        'both_count': flanked_tbl['both'].sum(),
-                        'nonmatch_count': flanked_tbl['nonmatch'].sum()
-                    }
-
-                    e_table = e_table[['chr_code','divergence','%iden','%gap','blast','E_value','%iden_flanks']]
-                    e_table['match_total'] = [[summary['match_count'],summary['total_count']]]
-                    e_table['front_back'] = [[summary['front_only_count'],summary['back_only_count']]]
-                    e_table['both_non'] = [[summary['both_count'],summary['nonmatch_count']]]
-                    e_table.columns = ['species','chr_code','divergence','%iden','%gap','blast','E_value','%iden_flanks','%gap_flanks','E_val_flanks']
-                    return e_table
+                return e_table
 #%%
 def get_maf_filepath(maf_dir, chrom):
     files = os.listdir(maf_dir)

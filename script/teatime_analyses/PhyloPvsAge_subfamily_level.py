@@ -10,7 +10,7 @@ def find_nearest(array, value):
 #%% INPUT PARAMETERS
 repeatmasker_filepath = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv'
 mean_phyloP_filepath  = '/rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/output/ma_mapper/hg38_main/phyloP.txt'
-combined_table_dir = None
+combined_table_dir = '/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/data/output/teatime/combined_age_div_lenient/'
 subfamily_list = ['MER11A']
 #%% INITIATION
 age_canon = utility.age_canon()[:-1]
