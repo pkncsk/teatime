@@ -2,6 +2,7 @@
 import pandas as pd
 import re
 import argparse
+import os
 def repeatmasker_prep(repeatmasker_filepath):
     rmskout_table=pd.read_csv(repeatmasker_filepath, sep='\t', index_col = 0, header = 0)
     #filter table
@@ -53,7 +54,7 @@ def get_related_internal_te_ages(block_id, subfamily, repeatmasker_table,
     """
     base_subfamily = get_base_subfamily(subfamily)
 
-    block_rmsk = repeatmasker_table[repeatmasker_table['block_id'] == block_id]
+    block_rmsk = repeatmasker_table[repeatmasker_table['id'] == block_id]
     repnames = block_rmsk['repName'].unique()
 
     # Match internal variants like THE1*, THE1C-int, THE1A-int, etc.
@@ -87,7 +88,7 @@ def ltr_correction(subfamily, output_dir, internal_id_dir, age_table_dir, correc
         print('start',subfamily)
 
         internal_id_filepath = f'{internal_id_dir}/{subfamily}.internal_id.txt'
-        internal_id=pd.read_csv(internal_id_dir, sep='\t', index_col = 0)
+        internal_id=pd.read_csv(internal_id_filepath, sep='\t', index_col = 0)
         age_table_filepath = f'{age_table_dir}/{subfamily}.teatime.txt'
         age_table = pd.read_csv(age_table_filepath, sep='\t')
         internal_ids_age = internal_id.merge(age_table, on='internal_id')
@@ -97,7 +98,23 @@ def ltr_correction(subfamily, output_dir, internal_id_dir, age_table_dir, correc
         internal_ids_age['block_id'] = internal_ids_age['internal_id'].str.extract(r'^(.*?_\d+)_')[0]
         # Identify candidate LTR blocks
         int_counts = internal_ids_age.pivot_table(index='block_id', columns='int_type', aggfunc='size', fill_value=0)
-        eligible_blocks = int_counts[(int_counts.get('aINT', 0) > 0) & (int_counts.get('bINT', 0) > 0)].index
+        #eligible_blocks = int_counts[(int_counts.get('aINT', 0) ==1) & (int_counts.get('bINT', 0) ==1)].index
+        # Drop duplicate internal_id entries — one row per LTR piece
+        dedup = internal_ids_age.drop_duplicates(subset='internal_id')
+
+        # Now do the groupby eligibility on deduplicated data
+        valid_blocks = (
+            dedup.groupby(['block_id', 'int_type'])['internal_id']
+            .nunique()
+            .unstack(fill_value=0)
+        )
+
+        # Now filter eligible blocks
+        eligible_blocks = valid_blocks[
+            (valid_blocks.get('aINT', 0) == 1) & 
+            (valid_blocks.get('bINT', 0) == 1)
+        ].index
+
         # Prepare corrected age storage
 
         int_te_age_lookup = {}
@@ -115,7 +132,7 @@ def ltr_correction(subfamily, output_dir, internal_id_dir, age_table_dir, correc
             elif correction_mode == 'ltr-int':
                 # Only accept exact internal match for this subfamily (e.g., THE1C-int)
 
-                block_rmsk = repeatmasker_table[repeatmasker_table['block_id'] == block_id]
+                block_rmsk = repeatmasker_table[repeatmasker_table['id'] == block_id]
                 internal_rmsk = block_rmsk[block_rmsk['repName'] == expected_internal]
                 
                 if not internal_rmsk.empty:
@@ -199,7 +216,7 @@ if __name__ == "__main__":
         internal_id_dir=args.internal_id_dir,
         age_table_dir=args.age_table_dir,
         subfamily_list=subfamily_list,
-        repeatmasker_filepath=args.repeatmasker_filepath,
-        corrected_age_table_dir=args.output_dir,
+        repeatmasker_filepath=args.repeatmasker,
+        corrected_age_table_dir=args.output,
         correction_mode=args.correction_mode
     )

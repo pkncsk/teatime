@@ -408,8 +408,8 @@ if __name__ == "__main__":
         with open(args.subfamily_file) as f:
             subfamily_list = [line.strip() for line in f if line.strip()]
     main(
-        repeatmasker_filepath=args.repeatmasker_filepath,
+        repeatmasker_filepath=args.repeatmasker,
         subfamily_list=subfamily_list,
-        output_dir=args.output_dir,
+        output_dir=args.output,
         overlap_threshold=args.overlap_threshold,
     )
