@@ -627,30 +627,40 @@ def get_maf_filepath(maf_dir, chrom):
     return maf_filepath
 #%%
 def e_val_calc(internal_id, maf_dir,target_species, extension_length, e_value_cutoff):
-    internal_id_tbl_subset = internal_id_tbl[internal_id_tbl.internal_id == internal_id]
-    subset_index=internal_id_tbl_subset.rmsk_index.to_list()
-    rmsk_subset=repeatmasker_table[repeatmasker_table.index.isin(subset_index)]
-    chrom=rmsk_subset.genoName.unique()[0]
-    strand=rmsk_subset.strand.unique()[0]
-    if strand =='-':
-        internal_id_tbl_subset  = internal_id_tbl_subset.sort_index(ascending=False)
-    start_list=rmsk_subset.genoStart.to_list()
-    end_list=rmsk_subset.genoEnd.to_list()
-    if strand=='-':
-        strand = -1
-    else:
-        strand = 1
-    start_flanked=[min(start_list)-extension_length] + start_list + [max(end_list)]
-    end_flanked = [min(start_list)] + end_list + [max(end_list)+extension_length]
     try:
-        maf_filepath = get_maf_filepath(maf_dir, chrom)
-        E_table=e_val_engine_full(chrom, strand, start_flanked, end_flanked,maf_filepath, e_cutoff=e_value_cutoff, target_species=target_species, extension_length=extension_length)
-        
-    except UnboundLocalError:
-        print(internal_id)
-    E_table['internal_id'] = internal_id
-    return E_table
-    
+        internal_id_tbl_subset = internal_id_tbl[internal_id_tbl.internal_id == internal_id]
+        subset_index=internal_id_tbl_subset.rmsk_index.to_list()
+        rmsk_subset=repeatmasker_table[repeatmasker_table.index.isin(subset_index)]
+        chrom=rmsk_subset.genoName.unique()[0]
+        strand=rmsk_subset.strand.unique()[0]
+        if strand =='-':
+            internal_id_tbl_subset  = internal_id_tbl_subset.sort_index(ascending=False)
+        start_list=rmsk_subset.genoStart.to_list()
+        end_list=rmsk_subset.genoEnd.to_list()
+        if strand=='-':
+            strand = -1
+        else:
+            strand = 1
+        start_flanked=[min(start_list)-extension_length] + start_list + [max(end_list)]
+        end_flanked = [min(start_list)] + end_list + [max(end_list)+extension_length]
+        try:
+            maf_filepath = get_maf_filepath(maf_dir, chrom)
+            E_table=e_val_engine_full(chrom, strand, start_flanked, end_flanked,maf_filepath, e_cutoff=e_value_cutoff, target_species=target_species, extension_length=extension_length)
+            
+        except UnboundLocalError:
+            print(internal_id)
+        E_table['internal_id'] = internal_id
+        return E_table
+    except Exception as e:
+        print("❌ Exception in e_val_calc")
+        print(f"  internal_id: {internal_id}")
+        print(f"  target_species: {target_species}")
+        print(f"  extension_length: {extension_length}")
+        print(f"  e_value_cutoff: {e_value_cutoff}")
+        print(f"  maf_path: {maf_filepath}")
+        import traceback
+        traceback.print_exc()
+        return None  # or raise again if you want it to crash
 #%%
 def e_val_calc_batch(subfamily,
                      internal_id_dir,
