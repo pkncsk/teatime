@@ -16,7 +16,8 @@ def batch_extract_all_seq_records(df_filtered, genome_fasta):
     Run sequence_io once to extract all LTR sequences as SeqRecords.
     """
     # Sort so aINT/bINT pairs are grouped together
-    df_sorted = df_filtered.sort_values(['block_id', 'genoName', 'genoStart'])
+    df_sorted = df_filtered.sort_values(['ltr_pair_id', 'genoName', 'genoStart'])
+    df_sorted['internal_id'] = df_sorted['ltr_pair_id'] + '__' + df_sorted['internal_id']
 
     block_coords = df_sorted[['genoName', 'genoStart', 'genoEnd', 'internal_id', 'strand']].copy()
     block_coords['score'] = 10
@@ -35,8 +36,8 @@ def write_seq_records_per_block(seq_records, output_dir="./tmp"):
     record_dict = {}
 
     for rec in seq_records:
-        parts = rec.id.split("_", 2)
-        block_id = parts[0] + "_" + parts[1]  # e.g., THE1C_4250279
+        parts = rec.id.split("__")
+        block_id = parts[0]
         record_dict.setdefault(block_id, []).append(rec)
 
     for block_id, records in record_dict.items():
@@ -72,9 +73,9 @@ def run_batch_alignment(block_ids, tmp_dir="./tmp", nthread=6):
 
 if __name__ == "__main__":
     # Required input
-    filtered_blocks_path = "/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/evalutation/final_LTR_sample_3000.txt"
+    filtered_blocks_path = "/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/evalutation/ltr_pair_valid.txt"
     genome_fasta = '/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/data/resource/human_genome_fasta/hg38_fasta/hg38.fa'
-    tmp_dir = "./tmp"
+    tmp_dir = "/home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/evalutation/tmp_intactpair/"
     nthread = 6
 
     # Step 1: Load filtered block data

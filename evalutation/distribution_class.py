@@ -72,7 +72,7 @@ age_df['custom_group'] = age_df['repClass'].map(custom_groups).fillna(age_df['re
 #%%
 #summarize the table by age/and 10bin
 age_count_byclass = age_df.groupby(['te_age', 'mya_10binned','custom_group']).count().reset_index()[['te_age','mya_10binned','custom_group','genoName']].rename(columns={'genoName':'count'})
-class_of_interest = 'SINE'
+class_of_interest = 'DNA'
 class_of_interest_filename = class_of_interest.replace('/', '_')
 age_count_class=age_count_byclass[age_count_byclass['custom_group']==class_of_interest]
 global_xlim = None
@@ -154,9 +154,9 @@ ax.set_yticklabels([y_labels[i] for i in y_tick_positions])
 # Truncate y-axis to exclude outlier above 120
 ax.set_ylim(0, global_ylim)
 
-ax.set_xlabel("tAge (MYA)", fontdict={'fontsize':10})
-ax.set_ylabel("kAge (MYA)",fontdict={'fontsize':10})
-ax.set_title(f"{class_of_interest} TE counts grouped by TEATIME and Kimura distance derived age")
+ax.set_xlabel("tAge (MYA)", fontdict={'fontsize':12})
+ax.set_ylabel("kAge (MYA)",fontdict={'fontsize':12})
+#ax.set_title(f"{class_of_interest} TE counts grouped by TEATIME and Kimura distance derived age")
 
 # 🔹 Step 7: Add gridlines to match custom bin sizes
 ax.grid(True, which="both", color="white", linestyle="-", linewidth=0.5, alpha=0.5)
@@ -231,7 +231,7 @@ ax.set_ylim(0, global_ylim)
 
 ax.set_xlabel("tAge (MYA)", fontdict={'fontsize':12})
 ax.set_ylabel("kAge (MYA)", fontdict={'fontsize':12})
-ax.set_title(f"Per column Fraction of {class_of_interest} TE grouped by TEATIME and Kimura distance derived age")
+#ax.set_title(f"Per column Fraction of {class_of_interest} TE grouped by TEATIME and Kimura distance derived age")
 
 # 🔹 Step 7: Add gridlines to match custom bin sizes
 ax.grid(True, which="both", color="white", linestyle="-", linewidth=0.5, alpha=0.5)

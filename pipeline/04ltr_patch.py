@@ -11,75 +11,103 @@ def repeatmasker_prep(repeatmasker_filepath):
     filtered_table=rmskout_table[(~rmskout_table['repClass'].isin(discard_class)) & (rmskout_table['genoName'].isin(main_chr))]
     return filtered_table
 
-def strict_correction(block_df):
-    strict_rows = block_df[block_df['int_type'].isin(['aINT', 'bINT'])]
-    if not strict_rows.empty:
-        return strict_rows['te_age'].max()
-    else:
-        return block_df['te_age'].max()  # fallback to any available TE age
-    
-def preload_internal_te_ages(subfamily_internal, internal_id_dir, age_table_dir):
-    """
-    Load and merge internal ID and age table for a given subfamily (e.g., THE1C-int),
-    then return a dictionary mapping block_id to max TE age.
-    """
-    try:
-        int_id_path = f"{internal_id_dir}/{subfamily_internal}.internal_id.txt"
-        int_age_path = f"{age_table_dir}/{subfamily_internal}.teatime.txt"
+def apply_ltrint_correction(df, internal_id_dir,age_table_dir, mode):
+    if df['ltrpair_id'].isnull().all():
+        return df
+    global ltr_only
+    df_extend=df.merge(ltr_only, left_on='rmsk_index', right_index = True)
+    grouped=df_extend.dropna(subset=['ltrpair_id']).groupby('ltrpair_id')
 
-        int_id_table = pd.read_csv(int_id_path, sep="\t")
-        int_id_table['block_id'] = int_id_table['internal_id'].str.extract(r'^(.*?_\d+)_')[0]
+    corrected_ages = {}
+    for run_id, group in grouped:
+        if len(group) <2:
+            continue
+        chrom = group['genoName'].iloc[0]
+        strand = group['strand'].iloc[0]
+        start = group['genoStart'].min()
+        end = group['genoEnd'].max()
+        ltrpair_id = group['ltrpair_id'].iloc[0]
+        family = group['repName'].iloc[0]
+        te_class = group['repClass'].iloc[0]
 
-        int_age_table = pd.read_csv(int_age_path, sep="\t")
-
-        int_full = int_id_table.merge(int_age_table, on='internal_id')
-
-        return int_full.groupby('block_id')['te_age'].max().to_dict()
-
-    except FileNotFoundError:
-        print(f"[Warning] Cannot preload internal data for {subfamily_internal}")
-        return None   
-
-def get_base_subfamily(subfamily):
-    base = re.match(r'^[A-Za-z0-9]+', subfamily).group()
-    # Remove last char only if it's a letter (a-z or A-Z)
-    if base[-1].isalpha():
-        base = base[:-1]
-    return base
-
-def get_related_internal_te_ages(block_id, subfamily, repeatmasker_table,
-                                 internal_id_dir, age_table_dir):
-    """
-    Scan a block for any related -int elements (same root), and return all matching te_age values.
-    """
-    base_subfamily = get_base_subfamily(subfamily)
-
-    block_rmsk = repeatmasker_table[repeatmasker_table['id'] == block_id]
-    repnames = block_rmsk['repName'].unique()
-
-    # Match internal variants like THE1*, THE1C-int, THE1A-int, etc.
-    int_pattern = re.compile(rf"^{re.escape(base_subfamily)}([A-Z]|_)?-int$")
-    matching_ints = [name for name in repnames if int_pattern.match(name)]
-
-    collected_ages = []
-
-    for int_name in matching_ints:
+        candidates = ltr_by_chr_strand.get((chrom, strand))
+        if mode == 'ltr-int':
+            target_name = family + '-int'
+            internal_hit = candidates[
+                (candidates['genoStart'] >= start) &
+                (candidates['genoEnd'] <= end) &
+                (candidates['repName']==target_name)
+            ]
+        elif mode == 'greedy':
+            internal_hit = candidates[
+                (candidates['genoStart'] >= start) &
+                (candidates['genoEnd'] <= end) &
+                (candidates['repClass'] == te_class)
+            ]
+        else:
+            raise ValueError(f"Unsupported correction mode: {mode}")
+        
+        if len(internal_hit) != 1:
+            print(f"[INT MISMATCH] ltrpair_id '{ltrpair_id}' expected 1 internal, found {len(internal_hit)}. falling back to LTR age only")
+            corrected_ages[ltrpair_id] = max(group['te_age'])
+            continue
+        int_entry = internal_hit.iloc[0]
+        int_name = int_entry['repName']
+        int_idx = int_entry.name  # rmsk_index
+        int_id_path = f"{internal_id_dir}/{int_name}.internal_id.txt"
+        age_path = f"{age_table_dir}/{int_name}.teatime.txt"
+        
         try:
-            id_path = f"{internal_id_dir}/{int_name}.internal_id.txt"
-            age_path = f"{age_table_dir}/{int_name}.teatime.txt"
-
-            int_ids = pd.read_csv(id_path, sep='\t')
-            int_ids['block_id'] = int_ids['internal_id'].str.extract(r'^(.*?_\d+)_')[0]
-
+            int_id=pd.read_csv(int_id_path, sep='\t')
+            
             int_ages = pd.read_csv(age_path, sep='\t')
-            merged = int_ids.merge(int_ages, on='internal_id')
+            int_id_age = int_id.merge(int_ages, on='internal_id')
 
-            block_ages = merged[merged['block_id'] == block_id]['te_age'].tolist()
-            collected_ages.extend(block_ages)
+            if int_idx not in int_id_age['rmsk_index'].values:
+                print(f"[WARNING] rmsk_index '{int_idx}' not found in {int_name}.teatime.txt. Falling back to LTR age only.")
+                corrected_ages[ltrpair_id] = max(group['te_age'])
+                continue
         except FileNotFoundError:
-            continue  # Skip missing files silently
+            print(f"[WARNING] Age file for internal '{int_name}' not found at {age_path}. Falling back to LTR age only.")
+            corrected_ages[ltrpair_id] = max(group['te_age'])
+            continue
+        
+        
+        int_age = int_id_age[int_id_age['rmsk_index']==int_idx]['te_age'].values[0]
+        ltr_ages = group['te_age'].tolist()
+        all_ages = ltr_ages + [int_age]
+    
+        corrected_ages[ltrpair_id] = max(all_ages)
+    df['corrected_age'] = df['ltrpair_id'].map(corrected_ages).fillna(df['te_age'])
+    return df
 
-    return collected_ages
+def unpack_internal_id(df):
+
+    def parse_id(s):
+        if '__' in s:
+            # Pattern for IDs with __ separating status (and no explicit ltrpair_id)
+            pattern = r'(?P<family>[^_]+)_(?P<ltr_id>\d+)_(?P<internal_index>\d+)__(?P<status>.+)'
+        else:
+            # Pattern for IDs with ltrpair_id but no __ separator
+            pattern = r'(?P<family>[^_]+)_(?P<ltr_id>\d+)_(?P<internal_index>\d+)_(?P<ltrpair_id>\d+)_(?P<status>.+)'
+
+        match = re.match(pattern, s)
+        return match.groupdict() if match else {}
+
+    unpacked = df['internal_id'].apply(parse_id).apply(pd.Series)
+    return pd.concat([df, unpacked], axis=1)
+
+def apply_strict_correction(df):
+    if df['ltrpair_id'].isnull().all():
+        return df
+    paired = df.dropna(subset=['ltrpair_id']).copy()
+    print(paired)
+    max_ages = paired.groupby('ltrpair_id')['te_age'].max()
+    print(max_ages)
+    df['corrected_age'] = df['ltrpair_id'].map(max_ages)
+    df['corrected_age'] = df['corrected_age'].fillna(df['te_age'])
+    print(df)
+    return df
 #%%
 def ltr_correction(subfamily, output_dir, internal_id_dir, age_table_dir, correction_mode):
     #load table
@@ -88,85 +116,19 @@ def ltr_correction(subfamily, output_dir, internal_id_dir, age_table_dir, correc
         print('start',subfamily)
 
         internal_id_filepath = f'{internal_id_dir}/{subfamily}.internal_id.txt'
-        internal_id=pd.read_csv(internal_id_filepath, sep='\t', index_col = 0)
+        internal_id=pd.read_csv(internal_id_filepath, sep='\t')
         age_table_filepath = f'{age_table_dir}/{subfamily}.teatime.txt'
         age_table = pd.read_csv(age_table_filepath, sep='\t')
         internal_ids_age = internal_id.merge(age_table, on='internal_id')
-        # Extract LTR status from ID strings
-        internal_ids_age['int_type'] = internal_ids_age['internal_id'].str.extract(r'_(aINT|bINT|nINT|singleton)')
-        # extract block_id
-        internal_ids_age['block_id'] = internal_ids_age['internal_id'].str.extract(r'^(.*?_\d+)_')[0]
-        # Identify candidate LTR blocks
-        int_counts = internal_ids_age.pivot_table(index='block_id', columns='int_type', aggfunc='size', fill_value=0)
-        #eligible_blocks = int_counts[(int_counts.get('aINT', 0) ==1) & (int_counts.get('bINT', 0) ==1)].index
-        # Drop duplicate internal_id entries — one row per LTR piece
-        dedup = internal_ids_age.drop_duplicates(subset='internal_id')
+        internal_ids_age = unpack_internal_id(internal_ids_age)
 
-        # Now do the groupby eligibility on deduplicated data
-        valid_blocks = (
-            dedup.groupby(['block_id', 'int_type'])['internal_id']
-            .nunique()
-            .unstack(fill_value=0)
-        )
-
-        # Now filter eligible blocks
-        eligible_blocks = valid_blocks[
-            (valid_blocks.get('aINT', 0) == 1) & 
-            (valid_blocks.get('bINT', 0) == 1)
-        ].index
-
-        # Prepare corrected age storage
-
-        int_te_age_lookup = {}
-        if correction_mode == 'ltr-int':
-            expected_internal = f"{subfamily}-int"
-            int_te_age_lookup = preload_internal_te_ages(expected_internal, internal_id_dir, age_table_dir)
-
-        corrected_ages = {}
-        for block_id in eligible_blocks:
-            block_df = internal_ids_age[internal_ids_age['block_id'] == block_id]
-            if correction_mode == 'strict' or int_te_age_lookup is None:
-                # Use age from current subfamily only
-                corrected_ages[block_id]=strict_correction(block_df)
-            
-            elif correction_mode == 'ltr-int':
-                # Only accept exact internal match for this subfamily (e.g., THE1C-int)
-
-                block_rmsk = repeatmasker_table[repeatmasker_table['id'] == block_id]
-                internal_rmsk = block_rmsk[block_rmsk['repName'] == expected_internal]
-                
-                if not internal_rmsk.empty:
-                    # Gather internal aINT/bINT ages from current subfamily
-                    self_ages = block_df[block_df['int_type'].isin(['aINT', 'bINT'])]['te_age']
-                    int_ages = int_te_age_lookup.get(block_id)
-                    # Combine and take max
-                    combined_ages = pd.concat([self_ages, int_ages])
-                    corrected_ages[block_id] = combined_ages.max()
-
-                else:
-                    print('internal part with the same name not found: fallback to "strict" method')
-                    corrected_ages[block_id] = strict_correction(block_df)
-
-            elif correction_mode == 'greedy':
-                self_ages = block_df[block_df['int_type'].isin(['aINT', 'bINT'])]['te_age']
-
-                int_ages = get_related_internal_te_ages(
-                    block_id, subfamily, repeatmasker_table,
-                    internal_id_dir, age_table_dir
-                )
-
-                combined_ages = pd.concat([self_ages, pd.Series(int_ages)]) if int_ages else self_ages
-                corrected_ages[block_id] = combined_ages.max()
+        if correction_mode == 'strict':
+            updated_internal_ids_age = apply_strict_correction(internal_ids_age)
+        else:
+            updated_internal_ids_age = apply_ltrint_correction(internal_ids_age, internal_id_dir,age_table_dir,correction_mode)
         
-        # 1. Extract block_id from internal_id
-        age_table['block_id'] = age_table['internal_id'].str.extract(r'^(.*?_\d+)_')[0]
-
-        # 2. Add corrected_te_age column
-        age_table['corrected_te_age'] = age_table.apply(
-            lambda row: corrected_ages.get(row['block_id'], row['te_age']),
-            axis=1
-        )
-        age_table.to_csv(output_filepath, sep='\t', index=False)
+        ltr_patched_df = updated_internal_ids_age[['internal_id', 'te_age','corrected_age']]
+        ltr_patched_df.to_csv(output_filepath, sep='\t', index=False)
         print('done',subfamily)
     else:
         print('already done', subfamily)
@@ -180,6 +142,21 @@ def main(internal_id_dir,
          ):
     global repeatmasker_table
     repeatmasker_table = repeatmasker_prep(repeatmasker_filepath)
+    global ltr_by_chr_strand, ltr_only
+    # Run this once at the start before calling ltr_handler repeatedly
+    ltr_only = repeatmasker_table[
+        repeatmasker_table['repClass'].str.contains('LTR', na=False)
+    ].copy()
+
+    ltr_only = ltr_only[ltr_only['genoName'].str.match(r'chr[\dXY]+$')]
+
+    cols_to_keep = ['genoName', 'genoStart', 'genoEnd', 'strand', 'repName', 'repClass']
+    ltr_only = ltr_only[cols_to_keep]
+
+    ltr_by_chr_strand = {
+        (chrom, strand): df.sort_values('genoStart' if strand == '+' else 'genoEnd')
+        for (chrom, strand), df in ltr_only.groupby(['genoName', 'strand'])
+    }
     if subfamily_list is None:
         repname_counts = repeatmasker_table['repName'].value_counts().reset_index()
         repname_counts.columns = ['repName', 'count']

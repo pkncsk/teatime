@@ -694,7 +694,7 @@ def filter_e_for_age(subfamily,
         # Create a list to store the smaller DataFrames
         e_val_table_by_id = [group for _, group in grouped]
        
-        with ProcessPoolExecutor(max_workers=1) as executor:
+        with ProcessPoolExecutor(max_workers=80) as executor:
             results = executor.map(filter_e2, 
                                    e_val_table_by_id,
                                    repeat(internal_id_dir), 
