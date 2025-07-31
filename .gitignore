@@ -15,3 +15,5 @@
 *.fa
 *.svg
 *.jpeg
+/.lh/*
+/.history/*
