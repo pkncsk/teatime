@@ -3,6 +3,8 @@
 /debug/unequal_ltr_par_img/*
 /debug/unequal_ltr_par_img_extend/*
 /debug/
+/pipeline/bak/*
+/pipeline/THE1C/*
 *.png
 *.txt
 *.html
