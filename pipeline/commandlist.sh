@@ -43,6 +43,7 @@ python3 /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/pipelin
 -x /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/data/resource/zoonomia_divergence_ref_table/species447_info_c.txt \
 -o /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/pipeline \
 -s THE1C-int
+
 python3 /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/pipeline/04ltr_patch.py \
 -r /rds/project/rds-XrHDlpCeVDg/users/pakkanan/data/resource/repeatmasker_table/hg38_repeatlib2014/hg38.fa.out.tsv \
 -d /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/pipeline/ \
@@ -107,3 +108,47 @@ python3 /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/pipelin
 -x /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/data/resource/zoonomia_divergence_ref_table/species447_info_c.txt \
 -o /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/data/output/teatime447/teatime_simple \
 -s final_LTR_sample_3000
+
+python3 /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/pipeline/01progressive_annotation_mending.py \
+-r /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/repeatmasker.mwe.txt \
+-o /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/output \
+-s THE1C
+
+python3 /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/pipeline/02e_value_calculation.py \
+-r /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/repeatmasker.mwe.txt \
+-m /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/ \
+-d /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/output \
+-x /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/species447_info.txt \
+-o /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/output \
+-s THE1C
+
+python3 /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/pipeline/03age_assignment.py \
+-d /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/output \
+-e /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/output \
+-r /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/repeatmasker.mwe.txt \
+-m /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/ \
+-x /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/species447_info.txt \
+-o /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/output \
+-s THE1C
+
+python3 /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/pipeline/01progressive_annotation_mending.py \
+-r /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/repeatmasker.mwe.txt \
+-o /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/output \
+-s THE1C-int
+
+python3 /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/pipeline/02e_value_calculation.py \
+-r /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/repeatmasker.mwe.txt \
+-m /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/chr1_region_cut.maf \
+-d /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/output \
+-x /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/species447_info.txt \
+-o /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/output \
+-s THE1C-int
+
+python3 /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/pipeline/03age_assignment.py \
+-d /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/output \
+-e /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/output \
+-r /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/repeatmasker.mwe.txt \
+-m /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/chr1_region_cut.maf \
+-x /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/species447_info.txt \
+-o /home/pc575/rds/rds-kzfps-XrHDlpCeVDg/users/pakkanan/dev/teatime/test/output \
+-s THE1C-int

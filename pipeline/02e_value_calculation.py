@@ -611,20 +611,25 @@ def e_val_engine_full(chrom,
                 return e_table
 #%%
 def get_maf_filepath(maf_dir, chrom):
-    files = os.listdir(maf_dir)
-    maf_filename = f"{chrom}.maf" 
-    maf_files = [f for f in files if f.endswith(maf_filename)]
+    # If maf_dir is actually a file path, return it as-is
+    if os.path.isfile(maf_dir) or (maf_dir.endswith('.maf') or maf_dir.endswith('.maf.gz')):
 
-    # Determine the appropriate file to use
-    maf_filepath = None
-    if any(f.endswith('.maf') for f in maf_files):
-        maf_filepath = f"{maf_dir}/{maf_filename}" #.maf is more optimal performance wise 
-    elif any(f.endswith('.maf.gz') for f in maf_files):
-        maf_filepath = f"{maf_dir}/{maf_filename}.gz" 
+        return maf_dir
     else:
-        raise FileNotFoundError(f"No .maf or .maf.gz file found for chromosome {chrom} in {maf_dir}")
+        files = os.listdir(maf_dir)
+        maf_filename = f"{chrom}.maf" 
+        maf_files = [f for f in files if f.endswith(maf_filename)]
+        print(maf_files)
+        # Determine the appropriate file to use
+        maf_filepath = None
+        if any(f.endswith('.maf') for f in maf_files):
+            maf_filepath = f"{maf_dir}/{maf_filename}" #.maf is more optimal performance wise 
+        elif any(f.endswith('.maf.gz') for f in maf_files):
+            maf_filepath = f"{maf_dir}/{maf_filename}.gz" 
+        else:
+            raise FileNotFoundError(f"No .maf or .maf.gz file found for chromosome {chrom} in {maf_dir}")
 
-    return maf_filepath
+        return maf_filepath
 #%%
 def e_val_calc(internal_id, maf_dir,target_species, extension_length, e_value_cutoff):
     try:
@@ -754,8 +759,12 @@ def e_val_calc_batch(subfamily,
         else:
             df_list = list()
             with ProcessPoolExecutor(max_workers=80) as executor:
-                results = executor.map(e_val_calc, internal_id_list)
-            #
+                results = executor.map(e_val_calc, 
+                                               internal_id_list, 
+                                               repeat(maf_dir),
+                                               repeat(target_species), 
+                                               repeat(extension_length), 
+                                               repeat(e_value_cutoff))
             for result in results:
                     df_list.append(result)
             output_table=pd.concat(df_list)
