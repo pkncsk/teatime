@@ -21,7 +21,7 @@ No installation is needed, the scripts can be downloaded directly from `/pipelin
 
 # Usage examples
 
-This section illustrates the `teatime` workflow with minimal working example files in the `/test` folder except for `MAF` file, which was uploaded [here]() instead. All files were cropped to `chr1:5152456-7798441` of the human reference genome `hg38`. 
+This section illustrates the `teatime` workflow with minimal working example files in the `/test` folder except for `MAF` file, which was uploaded (gzip) [here](https://www.dropbox.com/scl/fi/j0x3goc9tej4pct9x6p5t/chr1_region_cut.maf.gz?rlkey=wtsxo52ucx0i32kfwyedv70me&st=uc045mfy&dl=0) instead. All files were cropped to `chr1:5152456-7798441` of the human reference genome `hg38`. 
 
 First, assign internal IDs to join TE fragments in the RepeatMasker table:
 
