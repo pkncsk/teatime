@@ -1,0 +1,4 @@
+rmsk_index	internal_id
+7634	THE1C-int_6363_0__complete
+8825	THE1C-int_7344_0__singleton
+12474	THE1C-int_10428_0__complete

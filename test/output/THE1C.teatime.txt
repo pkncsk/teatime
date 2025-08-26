@@ -1,0 +1,16 @@
+internal_id	te_age
+THE1C_6363_0_0_complete	43.0
+THE1C_6363_1_0_join	43.0
+THE1C_6678_0__complete	43.0
+THE1C_6980_0__singleton	43.0
+THE1C_7022_0__complete	43.0
+THE1C_7077_0__complete	43.0
+THE1C_7288_0__singleton	43.0
+THE1C_7315_0__complete	43.0
+THE1C_7344_0__complete	43.0
+THE1C_8908_0__join	43.0
+THE1C_9526_0__complete	43.0
+THE1C_9647_0__complete	43.0
+THE1C_9783_0__complete	43.0
+THE1C_10428_1_16_complete	43.0
+THE1C_10428_0_16_complete	43.0
