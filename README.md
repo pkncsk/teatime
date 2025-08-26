@@ -4,7 +4,7 @@ A collection of python script for TE age assignment using TEA-TIME (Transposable
 # Quick links
 - [Dependencies](#dependencies)
 - [Installation](#installation)
-- [Usage](#usage)
+- [Usage examples](#usage-examples)
 - [Documentation](#documentation)
 
 
@@ -19,7 +19,42 @@ A collection of python script for TE age assignment using TEA-TIME (Transposable
 
 No installation is needed, the scripts can be downloaded directly from `/pipeline` and use as is
 
-# Usage
+# Usage examples
+
+This section illustrates the `teatime` workflow with minimal working example files in the `/test` folder except for `MAF` file, which was uploaded [here]() instead. All files were cropped to `chr1:5152456-7798441` of the human reference genome `hg38`. 
+
+First, assign internal IDs to join TE fragments in the RepeatMasker table:
+
+```bash
+python3 /teatime/pipeline/01progressive_annotation_mending.py \
+-r /teatime/test/repeatmasker.mwe.txt \
+-o /teatime/test/output \
+-s THE1C
+```
+Then, calculate E-values using the internal ID file and multispecies alignment:
+
+```bash
+python3 /teatime/pipeline/02e_value_calculation.py \
+-r /teatime/test/repeatmasker.mwe.txt \
+-m /teatime/test/ \
+-d /teatime/test/output \
+-x /teatime/test/species447_info.txt \
+-o /teatime/test/output \
+-s THE1C
+```
+Finally, estimate TE age using the E-value table:
+
+```bash
+python3 /teatime/pipeline/03age_assignment.py \
+-d /teatime/test/output \
+-e /teatime/test/output \
+-r /teatime/test/repeatmasker.mwe.txt \
+-m /teatime/test/ \
+-x /test/species447_info.txt \
+-o /teatime/test/output \
+-s THE1C
+```
+The final output file, output/THE1C.teatime.txt, contains internal_id and te_age.
 
 # Documentation
 
