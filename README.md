@@ -23,8 +23,12 @@ No installation is needed, the scripts can be downloaded directly from `/pipelin
 
 This section illustrates the `teatime` workflow with minimal working example files in the `/test` folder except for `MAF` file, which was uploaded (gzip) [here](https://www.dropbox.com/scl/fi/j0x3goc9tej4pct9x6p5t/chr1_region_cut.maf.gz?rlkey=wtsxo52ucx0i32kfwyedv70me&st=uc045mfy&dl=0) instead. All files were cropped to `chr1:5152456-7798441` of the human reference genome `hg38`. 
 
-First, assign internal IDs to join TE fragments in the RepeatMasker table:
+### Required inputs
+- [the `RepeatMasker` output](https://www.repeatmasker.org/genomes/hg38/RepeatMasker-rm405-db20140131/hg38.fa.out.gz)
+- A table containing information about species in multispecies alignment
+- Multispecies alignment files
 
+First, assign internal IDs to TE fragments in the RepeatMasker table:
 ```bash
 python3 /teatime/pipeline/01progressive_annotation_mending.py \
 -r /teatime/test/repeatmasker.mwe.txt \
@@ -50,11 +54,11 @@ python3 /teatime/pipeline/03age_assignment.py \
 -e /teatime/test/output \
 -r /teatime/test/repeatmasker.mwe.txt \
 -m /teatime/test/ \
--x /test/species447_info.txt \
+-x /teatime/test/species447_info.txt \
 -o /teatime/test/output \
 -s THE1C
 ```
-The final output file, output/THE1C.teatime.txt, contains internal_id and te_age.
+The final output file, `/teatime/test/output/THE1C.teatime.txt`, contains `internal_id` and `te_age`.
 
 # Documentation
 
